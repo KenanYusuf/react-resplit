@@ -16,7 +16,7 @@ const HORIZONTAL_SPLITTER_CLASSES = 'before:w-[7px] before:-left-[3px]';
 
 const VERTICAL_SPLITTER_CLASSES = 'before:h-[7px] before:-top-[3px]';
 
-const appCode = `import { useResplit } from 'resplit';
+const appCode = `import { useResplit } from 'react-resplit';
 import './style.css';
 
 function App() {
@@ -97,20 +97,14 @@ export const CodeEditorExample = () => {
 
   return (
     <SandpackProvider
-      template="react"
+      template='react-ts'
       files={{
-        '/App.js': 'export default () => <h1>Hello World</h1>',
+        '/App.tsx': appCode,
         '/style.css': styleCode,
-        '/node_modules/resplit/package.json': {
-          code: JSON.stringify({
-            name: 'resplit',
-            main: './index.js',
-          }),
-          hidden: true,
-        },
-        '/node_modules/resplit/index.js': {
-          code: '// This is a fake resplit package',
-          hidden: true,
+      }}
+      customSetup={{
+        dependencies: {
+          "react-resplit": "0.0.1",
         },
       }}
       theme="dark"
