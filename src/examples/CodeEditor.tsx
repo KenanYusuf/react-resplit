@@ -97,14 +97,14 @@ export const CodeEditorExample = () => {
 
   return (
     <SandpackProvider
-      template='react-ts'
+      template="react-ts"
       files={{
         '/App.tsx': appCode,
         '/style.css': styleCode,
       }}
       customSetup={{
         dependencies: {
-          "react-resplit": "0.0.1",
+          'react-resplit': '0.0.1',
         },
       }}
       theme="dark"

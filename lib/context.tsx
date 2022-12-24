@@ -3,8 +3,8 @@ import { ResplitMethods, ResplitProviderProps } from './types';
 
 const ResplitContext = createContext<ResplitMethods | undefined>(undefined);
 
-export const ResplitProvider = ({ children, ...methods }: ResplitProviderProps) => {
-  return <ResplitContext.Provider value={methods}>{children}</ResplitContext.Provider>;
+export const ResplitProvider = ({ value, children }: ResplitProviderProps) => {
+  return <ResplitContext.Provider value={value}>{children}</ResplitContext.Provider>;
 };
 
 export const useResplitContext = () => {

@@ -64,6 +64,7 @@ export interface ChildrenState {
   [name: string]: PaneChild | SplitterChild;
 }
 
-export interface ResplitProviderProps extends ResplitMethods {
+export interface ResplitProviderProps {
+  value: ResplitMethods;
   children: ReactNode;
 }
