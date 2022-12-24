@@ -1,7 +1,7 @@
 # react-resplit
 Resizable split pane layouts for React applications 🖖
 
-- Flexible hook-based API that allows for any styling methods
+- Flexible hook-based API that works with any styling method
 - Built with modern CSS, a grid-based layout and custom properties
 - Works with any amount of panes in a vertical or horizontal layout
 
