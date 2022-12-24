@@ -19,7 +19,6 @@
     "url": "https://github.com/KenanYusuf/react-resplit/issues"
   },
   "license": "MIT",
-  "private": true,
   "type": "module",
   "version": "0.0.1",
   "main": "./dist/resplit.umd.js",
