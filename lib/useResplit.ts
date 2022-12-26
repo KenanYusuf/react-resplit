@@ -17,7 +17,8 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   const containerRef = useRef<HTMLDivElement>();
   const activeSplitterIndex = useRef<number | null>(null);
 
-  const getChildElement = (order: Order) => containerRef.current?.querySelector(`[data-resplit-order="${order}"]`);
+  const getChildElement = (order: Order) =>
+    containerRef.current?.querySelector(`:scope > [data-resplit-order="${order}"]`);
 
   const getChildSize = (order: Order) => {
     const childSize = containerRef.current?.style.getPropertyValue(`--resplit-${order}`);
