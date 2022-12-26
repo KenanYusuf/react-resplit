@@ -60,8 +60,10 @@ export interface SplitterChild extends SplitterOptions {
   size: `${number}px`;
 }
 
+export type Order = number | string;
+
 export interface ChildrenState {
-  [name: string]: PaneChild | SplitterChild;
+  [order: Order]: PaneChild | SplitterChild;
 }
 
 export interface ResplitProviderProps {

@@ -8,6 +8,7 @@ import {
   GetSplitterProps,
   ChildrenState,
   PaneChild,
+  Order,
 } from './types';
 import { convertFrToNumber, convertPxToNumber } from './utils';
 
@@ -16,39 +17,21 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   const containerRef = useRef<HTMLDivElement>();
   const activeSplitterIndex = useRef<number | null>(null);
 
-  const getChildElement = (order: number) => containerRef.current?.querySelector(`[data-resplit-order="${order}"]`);
+  const getChildElement = (order: Order) => containerRef.current?.querySelector(`[data-resplit-order="${order}"]`);
 
-  const getChildSize = (order: number | string) => {
+  const getChildSize = (order: Order) => {
     const childSize = containerRef.current?.style.getPropertyValue(`--resplit-${order}`);
     if (!childSize) return 0;
     return childSize?.includes('fr') ? convertFrToNumber(childSize) : convertPxToNumber(childSize);
   };
 
-  const setChildSize = (order: number, size: string) =>
+  const setChildSize = (order: Order, size: string) =>
     containerRef.current?.style.setProperty(`--resplit-${order}`, size);
 
-  const getChildAttribute = (order: number, attribute: string) => {
-    const pane = getChildElement(order);
+  const getPaneCollapsed = (order: Order) => getChildElement(order)?.getAttribute('data-resplit-collapsed') === 'true';
 
-    if (pane) {
-      return pane.getAttribute(attribute);
-    }
-
-    return null;
-  };
-
-  const setChildAttribute = (order: number, attribute: string, value: string) => {
-    const pane = getChildElement(order);
-
-    if (pane) {
-      pane.setAttribute(attribute, value);
-    }
-  };
-
-  const getPaneCollapsed = (order: number) => getChildAttribute(order, 'data-resplit-collapsed') === 'true';
-
-  const setPaneCollapsed = (order: number, collapsed: boolean) =>
-    setChildAttribute(order, 'data-resplit-collapsed', collapsed ? 'true' : 'false');
+  const setPaneCollapsed = (order: Order, collapsed: boolean) =>
+    getChildElement(order)?.setAttribute('data-resplit-collapsed', String(collapsed));
 
   /**
    * Mouse move handler
@@ -156,7 +139,10 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   const handleMouseUp = () => {
     // Set data attributes
     containerRef.current?.setAttribute('data-resplit-resizing', 'false');
-    setChildAttribute(activeSplitterIndex.current!, 'data-resplit-active', 'false');
+
+    if (activeSplitterIndex.current !== null) {
+      getChildElement(activeSplitterIndex.current)?.setAttribute('data-resplit-active', 'false');
+    }
 
     // Unset refs
     activeSplitterIndex.current = null;
@@ -181,7 +167,10 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
 
     // Set data attributes
     containerRef.current?.setAttribute('data-resplit-resizing', 'true');
-    setChildAttribute(order, 'data-resplit-active', 'true');
+
+    if (activeSplitterIndex.current !== null) {
+      getChildElement(activeSplitterIndex.current)?.setAttribute('data-resplit-active', 'true');
+    }
 
     // Disable text selection and cursor
     document.documentElement.style.cursor = CURSOR_BY_DIRECTION[direction];
@@ -206,10 +195,10 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
       const child = children[order];
 
       if (child.type === 'pane') {
-        const paneSize = getPaneCollapsed(Number(order)) ? '0fr' : child.initialSize || `${1 / paneCount}fr`;
-        setChildSize(Number(order), paneSize);
+        const paneSize = getPaneCollapsed(order) ? '0fr' : child.initialSize || `${1 / paneCount}fr`;
+        setChildSize(order, paneSize);
       } else {
-        setChildSize(Number(order), child.size);
+        setChildSize(order, child.size);
       }
     });
   }, [Object.keys(children).length]);
