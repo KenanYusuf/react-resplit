@@ -16,6 +16,8 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   const containerRef = useRef<HTMLDivElement>();
   const activeSplitterIndex = useRef<number | null>(null);
 
+  const getChildElement = (order: number) => containerRef.current?.querySelector(`[data-resplit-order="${order}"]`);
+
   const getChildSize = (order: number | string) => {
     const childSize = containerRef.current?.style.getPropertyValue(`--resplit-${order}`);
     if (!childSize) return 0;
@@ -25,8 +27,8 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   const setChildSize = (order: number, size: string) =>
     containerRef.current?.style.setProperty(`--resplit-${order}`, size);
 
-  const getChildDataAttribute = (order: number, attribute: string) => {
-    const pane = containerRef.current?.querySelector(`[data-resplit-order="${order}"]`);
+  const getChildAttribute = (order: number, attribute: string) => {
+    const pane = getChildElement(order);
 
     if (pane) {
       return pane.getAttribute(attribute);
@@ -35,18 +37,18 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     return null;
   };
 
-  const setChildDataAttribute = (order: number, attribute: string, value: string) => {
-    const pane = containerRef.current?.querySelector(`[data-resplit-order="${order}"]`);
+  const setChildAttribute = (order: number, attribute: string, value: string) => {
+    const pane = getChildElement(order);
 
     if (pane) {
       pane.setAttribute(attribute, value);
     }
   };
 
-  const getPaneCollapsed = (order: number) => getChildDataAttribute(order, 'data-resplit-collapsed') === 'true';
+  const getPaneCollapsed = (order: number) => getChildAttribute(order, 'data-resplit-collapsed') === 'true';
 
   const setPaneCollapsed = (order: number, collapsed: boolean) =>
-    setChildDataAttribute(order, 'data-resplit-collapsed', collapsed ? 'true' : 'false');
+    setChildAttribute(order, 'data-resplit-collapsed', collapsed ? 'true' : 'false');
 
   /**
    * Mouse move handler
@@ -54,8 +56,16 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
    * - Handle resizing of panes
    */
   const handleMouseMove = (e: MouseEvent) => {
+    // Return if no active splitter
     if (activeSplitterIndex.current === null) return;
 
+    // Get the splitter element
+    const splitter = getChildElement(activeSplitterIndex.current);
+
+    // Return if no splitter element could be found
+    if (!splitter) return;
+
+    // Calculate available space
     const combinedSplitterSize = Object.entries(children).reduce(
       (total, [order, child]) => total + (child.type === 'splitter' ? getChildSize(order) : 0),
       0,
@@ -63,77 +73,80 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     const containerSize =
       direction === 'horizontal' ? containerRef.current?.offsetWidth : containerRef.current?.offsetHeight;
     const availableSpace = (containerSize || 0) - combinedSplitterSize;
-    const movement = direction === 'horizontal' ? e.movementX : e.movementY;
+
+    // Calculate delta
+    const splitterRect = splitter.getBoundingClientRect();
+    const movement = direction === 'horizontal' ? e.clientX - splitterRect.left : e.clientY - splitterRect.top;
     const delta = movement / availableSpace;
 
-    if (delta) {
-      const isGrowing = delta > 0;
-      const isShrinking = delta < 0;
+    // Return if no change in the direction of movement
+    if (!delta) return;
 
-      // Prev pane
-      let prevPaneIndex = activeSplitterIndex.current! - 1;
-      let prevPane: PaneChild | null = children[prevPaneIndex] as PaneChild;
+    const isGrowing = delta > 0;
+    const isShrinking = delta < 0;
 
-      if (isShrinking) {
-        while (prevPaneIndex >= 0) {
-          const pane = children[prevPaneIndex];
-          const paneIsCollapsed = getPaneCollapsed(prevPaneIndex);
+    // Get the previous resizable pane (to left or above)
+    let prevPaneIndex = activeSplitterIndex.current - 1;
+    let prevPane: PaneChild | null = children[prevPaneIndex] as PaneChild;
 
-          if (pane.type === 'splitter' || paneIsCollapsed) {
-            prevPaneIndex--;
-            prevPane = null;
-          } else {
-            prevPane = pane;
-            break;
-          }
+    if (isShrinking) {
+      while (prevPaneIndex >= 0) {
+        const pane = children[prevPaneIndex];
+
+        if (pane.type === 'splitter' || getPaneCollapsed(prevPaneIndex)) {
+          prevPaneIndex--;
+          prevPane = null;
+        } else {
+          prevPane = pane;
+          break;
         }
-      }
-
-      // Next pane
-      let nextPaneIndex = activeSplitterIndex.current! + 1;
-      let nextPane: PaneChild | null = children[nextPaneIndex] as PaneChild;
-
-      if (isGrowing) {
-        while (nextPaneIndex < Object.values(children).length) {
-          const pane = children[nextPaneIndex];
-          const paneIsCollapsed = getPaneCollapsed(nextPaneIndex);
-
-          if (pane.type === 'splitter' || paneIsCollapsed) {
-            nextPaneIndex++;
-            nextPane = null;
-          } else {
-            nextPane = pane;
-            break;
-          }
-        }
-      }
-
-      if (prevPane && nextPane) {
-        let prevPaneSize = getChildSize(prevPaneIndex) + delta;
-        const prevPaneMinSize = convertFrToNumber(prevPane.minSize);
-        const prevPaneIsCollapsed = prevPaneSize <= prevPaneMinSize;
-
-        let nextPaneSize = getChildSize(nextPaneIndex) - delta;
-        const nextPaneMinSize = convertFrToNumber(nextPane.minSize);
-        const nextPaneIsCollapsed = nextPaneSize <= nextPaneMinSize;
-
-        if (prevPaneIsCollapsed) {
-          nextPaneSize = nextPaneSize + (prevPaneSize - prevPaneMinSize);
-          prevPaneSize = prevPaneMinSize;
-        }
-
-        if (nextPaneIsCollapsed) {
-          prevPaneSize = prevPaneSize + (nextPaneSize - nextPaneMinSize);
-          nextPaneSize = nextPaneMinSize;
-        }
-
-        setChildSize(prevPaneIndex, `${prevPaneSize}fr`);
-        setPaneCollapsed(prevPaneIndex, prevPaneIsCollapsed);
-
-        setChildSize(nextPaneIndex, `${nextPaneSize}fr`);
-        setPaneCollapsed(nextPaneIndex, nextPaneIsCollapsed);
       }
     }
+
+    // Get the next resizable pane (to right or below)
+    let nextPaneIndex = activeSplitterIndex.current + 1;
+    let nextPane: PaneChild | null = children[nextPaneIndex] as PaneChild;
+
+    if (isGrowing) {
+      while (nextPaneIndex < Object.values(children).length) {
+        const pane = children[nextPaneIndex];
+
+        if (pane.type === 'splitter' || getPaneCollapsed(nextPaneIndex)) {
+          nextPaneIndex++;
+          nextPane = null;
+        } else {
+          nextPane = pane;
+          break;
+        }
+      }
+    }
+
+    // Return if no panes are resizable
+    if (!prevPane || !nextPane) return;
+
+    let prevPaneSize = getChildSize(prevPaneIndex) + delta;
+    const prevPaneMinSize = convertFrToNumber(prevPane.minSize);
+    const prevPaneIsCollapsed = prevPaneSize <= prevPaneMinSize;
+
+    let nextPaneSize = getChildSize(nextPaneIndex) - delta;
+    const nextPaneMinSize = convertFrToNumber(nextPane.minSize);
+    const nextPaneIsCollapsed = nextPaneSize <= nextPaneMinSize;
+
+    if (prevPaneIsCollapsed) {
+      nextPaneSize = nextPaneSize + (prevPaneSize - prevPaneMinSize);
+      prevPaneSize = prevPaneMinSize;
+    }
+
+    if (nextPaneIsCollapsed) {
+      prevPaneSize = prevPaneSize + (nextPaneSize - nextPaneMinSize);
+      nextPaneSize = nextPaneMinSize;
+    }
+
+    setChildSize(prevPaneIndex, `${prevPaneSize}fr`);
+    setPaneCollapsed(prevPaneIndex, prevPaneIsCollapsed);
+
+    setChildSize(nextPaneIndex, `${nextPaneSize}fr`);
+    setPaneCollapsed(nextPaneIndex, nextPaneIsCollapsed);
   };
 
   /**
@@ -143,7 +156,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   const handleMouseUp = () => {
     // Set data attributes
     containerRef.current?.setAttribute('data-resplit-resizing', 'false');
-    setChildDataAttribute(activeSplitterIndex.current!, 'data-resplit-active', 'false');
+    setChildAttribute(activeSplitterIndex.current!, 'data-resplit-active', 'false');
 
     // Unset refs
     activeSplitterIndex.current = null;
@@ -168,7 +181,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
 
     // Set data attributes
     containerRef.current?.setAttribute('data-resplit-resizing', 'true');
-    setChildDataAttribute(order, 'data-resplit-active', 'true');
+    setChildAttribute(order, 'data-resplit-active', 'true');
 
     // Disable text selection and cursor
     document.documentElement.style.cursor = CURSOR_BY_DIRECTION[direction];
