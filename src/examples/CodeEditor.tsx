@@ -104,7 +104,7 @@ export const CodeEditorExample = () => {
       }}
       customSetup={{
         dependencies: {
-          'react-resplit': '0.0.1',
+          'react-resplit': '0.0.2',
         },
       }}
       theme="dark"

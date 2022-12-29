@@ -30,10 +30,13 @@ export interface SplitterOptions {
 }
 
 export interface SplitterProps {
-  style: CSSProperties;
+  role: 'separator';
+  tabIndex: 0;
   'data-resplit-order': number;
   'data-resplit-active': boolean;
+  style: CSSProperties;
   onMouseDown: () => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
 }
 
 export interface GetSplitterProps {
