@@ -278,6 +278,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     // Return splitter props
     return {
       role: 'separator',
+      'aria-orientation': direction,
       tabIndex: 0,
       'data-resplit-order': order,
       'data-resplit-active': false,

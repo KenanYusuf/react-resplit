@@ -1,6 +1,6 @@
 import { CSSProperties, LegacyRef, ReactNode } from 'react';
 
-export type DataAttrKeys = 'resizing' | 'collapsed';
+export type Direction = 'horizontal' | 'vertical';
 
 export interface PaneOptions {
   initialSize?: `${number}fr`;
@@ -31,6 +31,7 @@ export interface SplitterOptions {
 
 export interface SplitterProps {
   role: 'separator';
+  'aria-orientation': Direction;
   tabIndex: 0;
   'data-resplit-order': number;
   'data-resplit-active': boolean;
@@ -50,7 +51,7 @@ export interface ResplitMethods {
 }
 
 export interface ResplitOptions {
-  direction: 'horizontal' | 'vertical';
+  direction: Direction;
 }
 
 export interface PaneChild extends PaneOptions {
