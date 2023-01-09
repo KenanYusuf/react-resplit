@@ -5,6 +5,7 @@ Resizable split pane layouts for React applications 🖖
 - Flexible hook-based API that works with any styling method
 - Built with modern CSS, a grid-based layout and custom properties
 - Works with any amount of panes in a vertical or horizontal layout
+- Built following the [Window Splitter](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/) pattern for accessibility and keyboard controls
 
 ![react-resplit](https://user-images.githubusercontent.com/9557798/209449017-e648a053-f0de-49b1-bc8f-d56b4ddcf5db.gif)
 _Example of a code editor built with `react-resplit`_
@@ -65,6 +66,27 @@ As a basic example, you could provide a `className` prop to the splitter element
   height: 100%;
   background: #ccc;
 }
+```
+
+### Accessibility
+
+Resplit has been implemented using guidence from the [Window Splitter](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/) pattern.
+
+In addition to built-in accessibility considerations, you should also ensure that splitters are correctly labelled.
+
+If the primary pane has a visible label, the `aria-labelledby` attribute can be used.
+
+```tsx
+<div {...getPaneProps(0)}>
+  <h2 id="pane-1-label">Pane 1</h2>
+</div>
+<div aria-labelledby="pane-1-label" {...getSplitterProps(1)} />
+```
+
+Alternatively, if the pane does not have a visible label, the `aria-label` attribute can be used.
+
+```tsx
+<div aria-label="Pane 1" {...getSplitterProps(1)} />
 ```
 
 ## API

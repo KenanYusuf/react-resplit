@@ -10,7 +10,7 @@ import {
 } from '@codesandbox/sandpack-react';
 
 const SPLITTER_CLASSES =
-  'relative w-full h-full bg-zinc-600 before:absolute before:inset-0 before:bg-blue-600 before:z-10 before:bg-blue-700 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-100 before:ease-in-out data-[resplit-active=true]:before:opacity-100';
+  'relative w-full h-full bg-zinc-600 before:absolute before:inset-0 before:bg-blue-600 before:z-10 before:bg-blue-700 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-100 before:ease-in-out data-[resplit-active=true]:before:opacity-100 focus-visible:before:opacity-100 outline-none';
 
 const HORIZONTAL_SPLITTER_CLASSES = 'before:w-[7px] before:-left-[3px]';
 
@@ -68,7 +68,11 @@ const styleCode = `body {
 }
 `;
 
-const PaneHeader = ({ children }: { children: React.ReactNode }) => <h3 className="px-4 py-3">{children}</h3>;
+const PaneHeader = ({ children, id }: { children: React.ReactNode; id?: string }) => (
+  <h3 className="px-4 py-3" id={id}>
+    {children}
+  </h3>
+);
 
 const PreviewPane = () => {
   const resplitMethods = useResplit({ direction: 'vertical' });
@@ -76,11 +80,12 @@ const PreviewPane = () => {
   return (
     <div className="h-full" {...getContainerProps()}>
       <div {...getPaneProps(0, { initialSize: '0.7fr' })} className="flex flex-col bg-zinc-800">
-        <PaneHeader>Preview</PaneHeader>
+        <PaneHeader id="preview-pane">Preview</PaneHeader>
         <SandpackPreview className="flex-1" />
       </div>
       <div
         {...getSplitterProps(1, { size: '1px' })}
+        aria-labelledby="preview-pane"
         className={[SPLITTER_CLASSES, VERTICAL_SPLITTER_CLASSES].join(' ')}
       />
       <div {...getPaneProps(2, { initialSize: '0.3fr' })} className="flex flex-col bg-zinc-800">
@@ -104,7 +109,7 @@ export const CodeEditorExample = () => {
       }}
       customSetup={{
         dependencies: {
-          'react-resplit': '0.0.1',
+          'react-resplit': '0.0.2',
         },
       }}
       theme="dark"
@@ -127,24 +132,26 @@ export const CodeEditorExample = () => {
         </div>
         <div {...getContainerProps()} className="flex-1 font-mono text-sm">
           <div {...getPaneProps(0, { initialSize: '0.15fr', minSize: '0.1fr' })} className="bg-zinc-800">
-            <PaneHeader>Files</PaneHeader>
+            <PaneHeader id="files-pane">Files</PaneHeader>
             <SandpackFileExplorer autoHiddenFiles className="py-0" />
           </div>
           <div
             {...getSplitterProps(1, { size: '1px' })}
+            aria-labelledby="files-pane"
             className={[SPLITTER_CLASSES, HORIZONTAL_SPLITTER_CLASSES].join(' ')}
           />
           <div
             {...getPaneProps(2, { initialSize: '0.45fr', minSize: '0.1fr' })}
             className="flex flex-col bg-zinc-800 overflow-hidden"
           >
-            <PaneHeader>Code</PaneHeader>
+            <PaneHeader id="code-pane">Code</PaneHeader>
             <div className="flex-1 overflow-auto -mt-4 -ml-1 data-[resplit-resizing=true]:opacity-5">
               <SandpackCodeEditor showTabs={false} style={{ height: '100%' }} />
             </div>
           </div>
           <div
             {...getSplitterProps(3, { size: '1px' })}
+            aria-labelledby="code-pane"
             className={[SPLITTER_CLASSES, HORIZONTAL_SPLITTER_CLASSES].join(' ')}
           />
           <div {...getPaneProps(4, { initialSize: '0.4fr', minSize: '0.1fr' })}>

@@ -1,6 +1,6 @@
 import { CSSProperties, LegacyRef, ReactNode } from 'react';
 
-export type DataAttrKeys = 'resizing' | 'collapsed';
+export type Direction = 'horizontal' | 'vertical';
 
 export interface PaneOptions {
   initialSize?: `${number}fr`;
@@ -19,6 +19,7 @@ export interface GetContainerProps {
 export interface PaneProps {
   'data-resplit-order': number;
   'data-resplit-collapsed': boolean;
+  id: string;
 }
 
 export interface GetPaneProps {
@@ -30,10 +31,18 @@ export interface SplitterOptions {
 }
 
 export interface SplitterProps {
-  style: CSSProperties;
+  role: 'separator';
+  tabIndex: 0;
+  'aria-orientation': Direction;
+  'aria-valuemin': number;
+  'aria-valuemax': number;
+  'aria-valuenow': number;
+  'aria-controls': string;
   'data-resplit-order': number;
   'data-resplit-active': boolean;
+  style: CSSProperties;
   onMouseDown: () => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
 }
 
 export interface GetSplitterProps {
@@ -47,7 +56,7 @@ export interface ResplitMethods {
 }
 
 export interface ResplitOptions {
-  direction: 'horizontal' | 'vertical';
+  direction: Direction;
 }
 
 export interface PaneChild extends PaneOptions {

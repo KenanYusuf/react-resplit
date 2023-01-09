@@ -19,7 +19,7 @@ const examples = [
 ];
 
 function App() {
-  const [example, setExample] = useState(examples[0]);
+  const [example, setExample] = useState(examples[1]);
 
   return (
     <div className="flex flex-col h-screen text-white bg-zinc-800">

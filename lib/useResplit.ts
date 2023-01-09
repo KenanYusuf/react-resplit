@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { CURSOR_BY_DIRECTION, SPLITTER_DEFAULT_SIZE, GRID_TEMPLATE_BY_DIRECTION, PANE_DEFAULT_MIN_SIZE } from './const';
 import {
   ResplitOptions,
@@ -15,7 +15,8 @@ import { convertFrToNumber, convertPxToNumber } from './utils';
 export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   const [children, setChildren] = useState<ChildrenState>({});
   const containerRef = useRef<HTMLDivElement>();
-  const activeSplitterIndex = useRef<number | null>(null);
+  const activeSplitterOrder = useRef<number | null>(null);
+  const id = useId();
 
   const getChildElement = (order: Order) =>
     containerRef.current?.querySelector(`:scope > [data-resplit-order="${order}"]`);
@@ -26,51 +27,27 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     return childSize?.includes('fr') ? convertFrToNumber(childSize) : convertPxToNumber(childSize);
   };
 
-  const setChildSize = (order: Order, size: string) =>
+  const setChildSize = (order: Order, size: string) => {
     containerRef.current?.style.setProperty(`--resplit-${order}`, size);
+    const child = children[order];
+
+    if (child.type === 'pane') {
+      const paneSplitter = getChildElement(Number(order) + 1);
+      paneSplitter?.setAttribute('aria-valuenow', String(convertFrToNumber(size).toFixed(2)));
+    }
+  };
 
   const getPaneCollapsed = (order: Order) => getChildElement(order)?.getAttribute('data-resplit-collapsed') === 'true';
 
   const setPaneCollapsed = (order: Order, collapsed: boolean) =>
     getChildElement(order)?.setAttribute('data-resplit-collapsed', String(collapsed));
 
-  /**
-   * Mouse move handler
-   * - Fire when user is interacting with splitter
-   * - Handle resizing of panes
-   */
-  const handleMouseMove = (e: MouseEvent) => {
-    // Return if no active splitter
-    if (activeSplitterIndex.current === null) return;
-
-    // Get the splitter element
-    const splitter = getChildElement(activeSplitterIndex.current);
-
-    // Return if no splitter element could be found
-    if (!splitter) return;
-
-    // Calculate available space
-    const combinedSplitterSize = Object.entries(children).reduce(
-      (total, [order, child]) => total + (child.type === 'splitter' ? getChildSize(order) : 0),
-      0,
-    );
-    const containerSize =
-      direction === 'horizontal' ? containerRef.current?.offsetWidth : containerRef.current?.offsetHeight;
-    const availableSpace = (containerSize || 0) - combinedSplitterSize;
-
-    // Calculate delta
-    const splitterRect = splitter.getBoundingClientRect();
-    const movement = direction === 'horizontal' ? e.clientX - splitterRect.left : e.clientY - splitterRect.top;
-    const delta = movement / availableSpace;
-
-    // Return if no change in the direction of movement
-    if (!delta) return;
-
+  const resizeByDelta = (splitterOrder: Order, delta: number) => {
     const isGrowing = delta > 0;
     const isShrinking = delta < 0;
 
     // Get the previous resizable pane (to left or above)
-    let prevPaneIndex = activeSplitterIndex.current - 1;
+    let prevPaneIndex = Number(splitterOrder) - 1;
     let prevPane: PaneChild | null = children[prevPaneIndex] as PaneChild;
 
     if (isShrinking) {
@@ -88,7 +65,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     }
 
     // Get the next resizable pane (to right or below)
-    let nextPaneIndex = activeSplitterIndex.current + 1;
+    let nextPaneIndex = Number(splitterOrder) + 1;
     let nextPane: PaneChild | null = children[nextPaneIndex] as PaneChild;
 
     if (isGrowing) {
@@ -134,6 +111,41 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   };
 
   /**
+   * Mouse move handler
+   * - Fire when user is interacting with splitter
+   * - Handle resizing of panes
+   */
+  const handleMouseMove = (e: MouseEvent) => {
+    // Return if no active splitter
+    if (activeSplitterOrder.current === null) return;
+
+    // Get the splitter element
+    const splitter = getChildElement(activeSplitterOrder.current);
+
+    // Return if no splitter element could be found
+    if (!splitter) return;
+
+    // Calculate available space
+    const combinedSplitterSize = Object.entries(children).reduce(
+      (total, [order, child]) => total + (child.type === 'splitter' ? getChildSize(order) : 0),
+      0,
+    );
+    const containerSize =
+      direction === 'horizontal' ? containerRef.current?.offsetWidth : containerRef.current?.offsetHeight;
+    const availableSpace = (containerSize || 0) - combinedSplitterSize;
+
+    // Calculate delta
+    const splitterRect = splitter.getBoundingClientRect();
+    const movement = direction === 'horizontal' ? e.clientX - splitterRect.left : e.clientY - splitterRect.top;
+    const delta = movement / availableSpace;
+
+    // Return if no change in the direction of movement
+    if (!delta) return;
+
+    resizeByDelta(activeSplitterOrder.current, delta);
+  };
+
+  /**
    * Mouse up handler
    * - Fire when user stops interacting with splitter
    */
@@ -141,12 +153,12 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     // Set data attributes
     containerRef.current?.setAttribute('data-resplit-resizing', 'false');
 
-    if (activeSplitterIndex.current !== null) {
-      getChildElement(activeSplitterIndex.current)?.setAttribute('data-resplit-active', 'false');
+    if (activeSplitterOrder.current !== null) {
+      getChildElement(activeSplitterOrder.current)?.setAttribute('data-resplit-active', 'false');
     }
 
     // Unset refs
-    activeSplitterIndex.current = null;
+    activeSplitterOrder.current = null;
 
     // Re-enable text selection and cursor
     document.documentElement.style.cursor = '';
@@ -161,16 +173,17 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   /**
    * Mouse down handler
    * - Fire when user begins interacting with splitter
+   * - Handle resizing of panes using cursor
    */
   const handleMouseDown = (order: number) => () => {
     // Set active splitter
-    activeSplitterIndex.current = order;
+    activeSplitterOrder.current = order;
 
     // Set data attributes
     containerRef.current?.setAttribute('data-resplit-resizing', 'true');
 
-    if (activeSplitterIndex.current !== null) {
-      getChildElement(activeSplitterIndex.current)?.setAttribute('data-resplit-active', 'true');
+    if (activeSplitterOrder.current !== null) {
+      getChildElement(activeSplitterOrder.current)?.setAttribute('data-resplit-active', 'true');
     }
 
     // Disable text selection and cursor
@@ -181,6 +194,34 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     // Add mouse event listeners
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousemove', handleMouseMove);
+  };
+
+  /**
+   * Key down handler
+   * - Fire when user presses a key whilst focused on a splitter
+   * - Handle resizing of panes using keyboard
+   * - Refer to: https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/
+   */
+  const handleKeyDown = (splitterOrder: number) => (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const isHorizontal = direction === 'horizontal';
+    const isVertical = direction === 'vertical';
+
+    if ((e.key === 'ArrowLeft' && isHorizontal) || (e.key === 'ArrowUp' && isVertical)) {
+      resizeByDelta(splitterOrder, -0.01);
+    } else if ((e.key === 'ArrowRight' && isHorizontal) || (e.key === 'ArrowDown' && isVertical)) {
+      resizeByDelta(splitterOrder, 0.01);
+    } else if (e.key === 'Home') {
+      resizeByDelta(splitterOrder, -1);
+    } else if (e.key === 'End') {
+      resizeByDelta(splitterOrder, 1);
+    } else if (e.key === 'Enter') {
+      if (getPaneCollapsed(splitterOrder - 1)) {
+        const initialSize = (children[splitterOrder - 1] as PaneChild).initialSize || '1fr';
+        resizeByDelta(splitterOrder, convertFrToNumber(initialSize));
+      } else {
+        resizeByDelta(splitterOrder, -1);
+      }
+    }
   };
 
   /**
@@ -227,6 +268,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     return {
       'data-resplit-order': order,
       'data-resplit-collapsed': false,
+      id: `resplit-${id}-${order}`,
     };
   };
 
@@ -245,19 +287,24 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
 
     // Return splitter props
     return {
-      onMouseDown: handleMouseDown(order),
-      style: { cursor: CURSOR_BY_DIRECTION[direction] },
+      role: 'separator',
+      tabIndex: 0,
+      'aria-orientation': direction,
+      'aria-valuemin': 0,
+      'aria-valuemax': 1,
+      'aria-valuenow': 1,
+      'aria-controls': `resplit-${id}-${order - 1}`,
       'data-resplit-order': order,
       'data-resplit-active': false,
+      style: { cursor: CURSOR_BY_DIRECTION[direction] },
+      onMouseDown: handleMouseDown(order),
+      onKeyDown: handleKeyDown(order),
     };
   };
 
   const getContainerProps: GetContainerProps = () => {
     // Return container props
     return {
-      ref: (element: HTMLDivElement) => {
-        containerRef.current = element;
-      },
       'data-resplit-direction': direction,
       'data-resplit-resizing': false,
       style: {
@@ -267,6 +314,9 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
           const childVar = `minmax(0, var(--resplit-${order}))`;
           return value ? `${value} ${childVar}` : `${childVar}`;
         }, ''),
+      },
+      ref: (element: HTMLDivElement) => {
+        containerRef.current = element;
       },
     };
   };
