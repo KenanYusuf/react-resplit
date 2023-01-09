@@ -31,8 +31,11 @@ export interface SplitterOptions {
 
 export interface SplitterProps {
   role: 'separator';
-  'aria-orientation': Direction;
   tabIndex: 0;
+  'aria-orientation': Direction;
+  'aria-valuemin': number;
+  'aria-valuemax': number;
+  'aria-valuenow': number;
   'data-resplit-order': number;
   'data-resplit-active': boolean;
   style: CSSProperties;

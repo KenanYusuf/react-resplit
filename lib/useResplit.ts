@@ -26,8 +26,15 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     return childSize?.includes('fr') ? convertFrToNumber(childSize) : convertPxToNumber(childSize);
   };
 
-  const setChildSize = (order: Order, size: string) =>
+  const setChildSize = (order: Order, size: string) => {
     containerRef.current?.style.setProperty(`--resplit-${order}`, size);
+    const child = children[order];
+
+    if (child.type === 'pane') {
+      const paneSplitter = getChildElement(Number(order) + 1);
+      paneSplitter?.setAttribute('aria-valuenow', String(convertFrToNumber(size).toFixed(2)));
+    }
+  };
 
   const getPaneCollapsed = (order: Order) => getChildElement(order)?.getAttribute('data-resplit-collapsed') === 'true';
 
@@ -278,8 +285,11 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     // Return splitter props
     return {
       role: 'separator',
-      'aria-orientation': direction,
       tabIndex: 0,
+      'aria-orientation': direction,
+      'aria-valuemin': 0,
+      'aria-valuemax': 1,
+      'aria-valuenow': 1,
       'data-resplit-order': order,
       'data-resplit-active': false,
       style: { cursor: CURSOR_BY_DIRECTION[direction] },
