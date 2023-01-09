@@ -19,6 +19,7 @@ export interface GetContainerProps {
 export interface PaneProps {
   'data-resplit-order': number;
   'data-resplit-collapsed': boolean;
+  id: string;
 }
 
 export interface GetPaneProps {
@@ -36,6 +37,7 @@ export interface SplitterProps {
   'aria-valuemin': number;
   'aria-valuemax': number;
   'aria-valuenow': number;
+  'aria-controls': string;
   'data-resplit-order': number;
   'data-resplit-active': boolean;
   style: CSSProperties;

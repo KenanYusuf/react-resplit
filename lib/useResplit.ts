@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { CURSOR_BY_DIRECTION, SPLITTER_DEFAULT_SIZE, GRID_TEMPLATE_BY_DIRECTION, PANE_DEFAULT_MIN_SIZE } from './const';
 import {
   ResplitOptions,
@@ -16,6 +16,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
   const [children, setChildren] = useState<ChildrenState>({});
   const containerRef = useRef<HTMLDivElement>();
   const activeSplitterOrder = useRef<number | null>(null);
+  const id = useId();
 
   const getChildElement = (order: Order) =>
     containerRef.current?.querySelector(`:scope > [data-resplit-order="${order}"]`);
@@ -267,6 +268,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     return {
       'data-resplit-order': order,
       'data-resplit-collapsed': false,
+      id: `resplit-${id}-${order}`,
     };
   };
 
@@ -291,6 +293,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
       'aria-valuemin': 0,
       'aria-valuemax': 1,
       'aria-valuenow': 1,
+      'aria-controls': `resplit-${id}-${order - 1}`,
       'data-resplit-order': order,
       'data-resplit-active': false,
       style: { cursor: CURSOR_BY_DIRECTION[direction] },
