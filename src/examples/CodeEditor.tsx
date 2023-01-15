@@ -109,7 +109,7 @@ export const CodeEditorExample = () => {
       }}
       customSetup={{
         dependencies: {
-          'react-resplit': '0.0.2',
+          'react-resplit': 'latest',
         },
       }}
       theme="dark"
@@ -161,7 +161,7 @@ export const CodeEditorExample = () => {
       </div>
       <div className="bg-zinc-800 border-t border-zinc-600 text-white p-3">
         Demonstration of how an editor can be built with{' '}
-        <a href="https://github.com/KenanYusuf/resplit" className="underline">
+        <a href="https://github.com/KenanYusuf/react-resplit" className="underline">
           Resplit
         </a>{' '}
         and{' '}
