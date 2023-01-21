@@ -99,32 +99,34 @@ The `useResplit` hook is how resizable layouts are initialised, configured with 
 
 Configure how the resizable layout should function, e.g. the direction that the panes flow in.
 
-| Name        | Type                         | Description            |
-| ----------- | ---------------------------- | ---------------------- |
-| `direction` | `"horizontal" \| "vertical"` | Direction of the panes |
+| Name        | Type                         | Default        | Description            |
+| ----------- | ---------------------------- | -------------- | ---------------------- |
+| `direction` | `"horizontal" \| "vertical"` | `"horizontal"` | Direction of the panes |
 
 #### ResplitMethods `object`
 
 The `useResplit` hook returns the methods needed to register the container, panes and splitters. Each method returns an object of properties that should be spread to the relevant element.
 
-| Name                | Type                | Description                            |
-| ------------------- | ------------------- | -------------------------------------- |
-| `getContainerProps` | `GetContainerProps` | Used to register the container element |
-| `getPaneProps`      | `GetPaneProps`      | Used to register pane elements         |
-| `getSplitterProps`  | `GetSplitterProps`  | Used to register splitter elements     |
+| Name                | Type                                                          | Description                            |
+| ------------------- | ------------------------------------------------------------- | -------------------------------------- |
+| `getContainerProps` | `() => ContainerProps`                                        | Used to register the container element |
+| `getPaneProps`      | `(order: number, options?: PaneOptions) => PaneProps`         | Used to register pane elements         |
+| `getSplitterProps`  | `(order: number, options?: SplitterOptions) => SplitterProps` | Used to register splitter elements     |
 
-### GetContainerProps `() => ContainerProps`
+### getContainerProps `() => ContainerProps`
 
 Returns the ref and styles needed on the container element.
 
 #### ContainerProps `object`
+
+Properties needed for the container element.
 
 | Name    | Type                                           | Description                            |
 | ------- | ---------------------------------------------- | -------------------------------------- |
 | `ref`   | `React.LegacyRef<HTMLDivElement> \| undefined` | Ref for the container element          |
 | `style` | `React.CSSProperties`                          | Style object for the container element |
 
-### GetPaneProps `(order: number, options?: PaneOptions) => PaneProps`
+### getPaneProps `(order: number, options?: PaneOptions) => PaneProps`
 
 Given an order as the first argument, returns the props for the pane element.
 
@@ -132,21 +134,22 @@ Given an order as the first argument, returns the props for the pane element.
 
 An optional second argument, used to configure the initial size of the pane as well the minimum size.
 
-| Name          | Type          | Description                                                |
-| ------------- | ------------- | ---------------------------------------------------------- |
-| `initialSize` | `${number}fr` | Set the initial size of the pane as a fractional unit (fr) |
-| `minSize`     | `${number}fr` | Set the minimum size of the pane as a fractional unit (fr) |
+| Name          | Type          | Default                             | Description                                                |
+| ------------- | ------------- | ----------------------------------- | ---------------------------------------------------------- |
+| `initialSize` | `${number}fr` | [available space]/[number of panes] | Set the initial size of the pane as a fractional unit (fr) |
+| `minSize`     | `${number}fr` | "0fr"                               | Set the minimum size of the pane as a fractional unit (fr) |
 
 #### PaneProps `object`
 
-Returns properties needed for the pane element.
+Properties needed for the pane element.
 
-| Name                     | Type      | Description                                            |
-| ------------------------ | --------- | ------------------------------------------------------ |
-| `data-resplit-order`     | `number`  | Data attribute set to the order of the pane            |
-| `data-resplit-collapsed` | `boolean` | Data attribute marking if the pane is collapsed or not |
+| Name                     | Type      | Description                                                                    |
+| ------------------------ | --------- | ------------------------------------------------------------------------------ |
+| `id`                     | `string`  | A random ID, referenced by the associated splitter's `aria-controls` attribute |
+| `data-resplit-order`     | `number`  | Data attribute set to the order of the pane                                    |
+| `data-resplit-collapsed` | `boolean` | Data attribute marking if the pane is collapsed or not                         |
 
-### GetSplitterProps `(order: number, options?: SplitterOptions) => SplitterProps`
+### getSplitterProps `(order: number, options?: SplitterOptions) => SplitterProps`
 
 Given an order as the first argument, returns the props for the splitter element.
 
@@ -154,17 +157,25 @@ Given an order as the first argument, returns the props for the splitter element
 
 An optional second argument, used to configure the size of the splitter element
 
-| Name   | Type          | Description                                  |
-| ------ | ------------- | -------------------------------------------- |
-| `size` | `${number}px` | Set the size of the splitter as a pixel unit |
+| Name   | Type          | Default | Description                                  |
+| ------ | ------------- | ------- | -------------------------------------------- |
+| `size` | `${number}px` | "10px"  | Set the size of the splitter as a pixel unit |
 
 #### SplitterProps `object`
 
-Returns properties needed for the pane element.
+Properties needed for the splitter element.
 
-| Name                  | Type                  | Description                                                |
-| --------------------- | --------------------- | ---------------------------------------------------------- |
-| `style`               | `React.CSSProperties` | Style object for the splitter element                      |
-| `data-resplit-order`  | `number`              | Data attribute set to the order of the splitter            |
-| `data-resplit-active` | `boolean`             | Data attribute marking if splitter is being dragged or not |
-| `onMouseDown`         | `() => void`          | Mousedown event handler                                    |
+| Name                  | Type                                                   | Description                                                                         |
+| --------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `role`                | `"separator"`                                          | Role attribute for the splitter element                                             |
+| `tabIndex`            | `0`                                                    | Makes the splitter element selectable via the tab key                               |
+| `aria-orientation`    | `"horizontal" \| "vertical"`                           | Informs screen readers of the resize orientation                                    |
+| `aria-valuemin`       | `number`                                               | A decimal value representing the minimum size of the pane that the splitter resizes |
+| `aria-valuemax`       | `number`                                               | A decimal value representing the maximum size of the pane that the splitter resizes |
+| `aria-valuenow`       | `number`                                               | A decimal value representing the current size of the pane that the splitter resizes |
+| `aria-controls`       | `string`                                               | Informs screen readers which pane element the splitter controls                     |
+| `data-resplit-order`  | `number`                                               | Data attribute set to the order of the splitter                                     |
+| `data-resplit-active` | `boolean`                                              | Data attribute marking if splitter is being dragged or not                          |
+| `style`               | `React.CSSProperties`                                  | Style object for the splitter element                                               |
+| `onMouseDown`         | `() => void`                                           | Mousedown event handler                                                             |
+| `onKeyDown`           | `(event: React.KeyboardEvent<HTMLDivElement>) => void` | Keydown event handler                                                               |

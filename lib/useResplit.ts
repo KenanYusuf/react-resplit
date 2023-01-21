@@ -1,18 +1,45 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
-import { CURSOR_BY_DIRECTION, SPLITTER_DEFAULT_SIZE, GRID_TEMPLATE_BY_DIRECTION, PANE_DEFAULT_MIN_SIZE } from './const';
 import {
-  ResplitOptions,
-  ResplitMethods,
-  GetContainerProps,
-  GetPaneProps,
-  GetSplitterProps,
-  ChildrenState,
-  PaneChild,
-  Order,
-} from './types';
+  CURSOR_BY_DIRECTION,
+  SPLITTER_DEFAULT_SIZE,
+  GRID_TEMPLATE_BY_DIRECTION,
+  PANE_DEFAULT_MIN_SIZE,
+  DEFAULT_OPTIONS,
+} from './const';
+import { ResplitOptions, ResplitMethods, ChildrenState, PaneChild, Order } from './types';
 import { convertFrToNumber, convertPxToNumber } from './utils';
 
-export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
+/**
+ * The `useResplit` hook is how resizable layouts are initialised.
+ *
+ * @param resplitOptions - {@link ResplitOptions}
+ *
+ * @returns Methods needed to register the container, panes and splitters. {@link ResplitMethods}
+ *
+ * @example
+ * ```tsx
+ * import { useResplit } from 'react-resplit';
+ *
+ * function App() {
+ *   const {
+ *     getContainerProps,
+ *     getSplitterProps,
+ *     getPaneProps
+ *   } = useResplit({ direction: 'horizontal' });
+ *
+ *   return (
+ *     <div {...getContainerProps()}>
+ *       <div {...getPaneProps(0, { initialSize: '0.5fr' })}>Pane 1</div>
+ *       <div {...getSplitterProps(1, { size: '10px' })} />
+ *       <div {...getPaneProps(2, { initialSize: '0.5fr' })}>Pane 2</div>
+ *     </div>
+ *   );
+ * };
+ * ```
+ */
+export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
+  const options: ResplitOptions = { ...DEFAULT_OPTIONS, ...resplitOptions };
+  const { direction } = options;
   const [children, setChildren] = useState<ChildrenState>({});
   const containerRef = useRef<HTMLDivElement>();
   const activeSplitterOrder = useRef<number | null>(null);
@@ -251,7 +278,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
    * - Each function returns a set of props to be spread onto the relevant element
    * - Each function also registers the element with the hook
    */
-  const getPaneProps: GetPaneProps = (order, options = {}) => {
+  const getPaneProps: ResplitMethods['getPaneProps'] = (order, options = {}) => {
     // Register pane
     if (!children[order]) {
       setChildren((currentChildren) => ({
@@ -272,7 +299,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     };
   };
 
-  const getSplitterProps: GetSplitterProps = (order, options = {}) => {
+  const getSplitterProps: ResplitMethods['getSplitterProps'] = (order, options = {}) => {
     // Register splitter
     if (!children[order]) {
       setChildren((currentChildren) => ({
@@ -302,7 +329,7 @@ export const useResplit = ({ direction }: ResplitOptions): ResplitMethods => {
     };
   };
 
-  const getContainerProps: GetContainerProps = () => {
+  const getContainerProps: ResplitMethods['getContainerProps'] = () => {
     // Return container props
     return {
       'data-resplit-direction': direction,

@@ -1,3 +1,3 @@
-export const convertFrToNumber = (val: string): number => Number(val.replace('fr', ''));
+export const convertFrToNumber = (val: string) => Number(val.replace('fr', ''));
 
-export const convertPxToNumber = (val: string): number => Number(val.replace('px', ''));
+export const convertPxToNumber = (val: string) => Number(val.replace('px', ''));
