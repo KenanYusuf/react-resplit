@@ -1,3 +1,9 @@
+import { ResplitOptions } from './types';
+
+export const DEFAULT_OPTIONS: ResplitOptions = {
+  direction: 'horizontal',
+};
+
 export const GRID_TEMPLATE_BY_DIRECTION = {
   horizontal: 'gridTemplateColumns',
   vertical: 'gridTemplateRows',

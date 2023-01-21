@@ -20,7 +20,7 @@ const ChevronRight = () => (
 );
 
 export const ImageCompareExample = () => {
-  const resplitMethods = useResplit({ direction: 'horizontal' });
+  const resplitMethods = useResplit();
   const { getContainerProps, getSplitterProps, getPaneProps } = resplitMethods;
 
   return (
