@@ -134,10 +134,10 @@ Given an order as the first argument, returns the props for the pane element.
 
 An optional second argument, used to configure the initial size of the pane as well the minimum size.
 
-| Name          | Type          | Default                             | Description                                                |
-| ------------- | ------------- | ----------------------------------- | ---------------------------------------------------------- |
-| `initialSize` | `${number}fr` | [available space]/[number of panes] | Set the initial size of the pane as a fractional unit (fr) |
-| `minSize`     | `${number}fr` | "0fr"                               | Set the minimum size of the pane as a fractional unit (fr) |
+| Name          | Type          | Default                               | Description                                                |
+| ------------- | ------------- | ------------------------------------- | ---------------------------------------------------------- |
+| `initialSize` | `${number}fr` | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr) |
+| `minSize`     | `${number}fr` | `"0fr"`                                 | Set the minimum size of the pane as a fractional unit (fr) |
 
 #### PaneProps `object`
 
@@ -157,9 +157,9 @@ Given an order as the first argument, returns the props for the splitter element
 
 An optional second argument, used to configure the size of the splitter element
 
-| Name   | Type          | Default | Description                                  |
-| ------ | ------------- | ------- | -------------------------------------------- |
-| `size` | `${number}px` | "10px"  | Set the size of the splitter as a pixel unit |
+| Name   | Type          | Default   | Description                                  |
+| ------ | ------------- | --------- | -------------------------------------------- |
+| `size` | `${number}px` | `"10px"`  | Set the size of the splitter as a pixel unit |
 
 #### SplitterProps `object`
 
