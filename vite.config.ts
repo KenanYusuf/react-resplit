@@ -15,7 +15,7 @@ export default defineConfig({
       entry: path.resolve(__dirname, 'lib/index.ts'),
       name: 'resplit',
       formats: ['es', 'umd'],
-      fileName: (format) => `resplit.${format}.js`,
+      fileName: (format) => (format === 'umd' ? 'resplit.umd.cjs' : 'resplit.es.js'),
     },
     rollupOptions: {
       external: ['react', 'react-dom'],

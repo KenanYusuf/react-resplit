@@ -21,13 +21,13 @@
   "license": "MIT",
   "type": "module",
   "version": "0.3.0",
-  "main": "./dist/resplit.umd.js",
+  "main": "./dist/resplit.umd.cjs",
   "module": "./dist/resplit.es.js",
   "types": "./dist/resplit.d.ts",
   "exports": {
     ".": {
       "import": "./dist/resplit.es.js",
-      "require": "./dist/resplit.umd.js"
+      "require": "./dist/resplit.umd.cjs"
     }
   },
   "files": [
