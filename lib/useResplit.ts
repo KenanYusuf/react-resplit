@@ -132,7 +132,6 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     const nextPaneIsCollapsed = nextPaneSize <= nextPaneMinSize;
 
     if (prevPaneIsCollapsed) {
-      console.log({ prevPaneSize, prevPaneMinSize });
       nextPaneSize = nextPaneSize + (prevPaneSize - prevPaneMinSize);
       prevPaneSize = prevPaneMinSize;
     }
