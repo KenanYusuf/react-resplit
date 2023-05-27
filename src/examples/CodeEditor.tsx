@@ -88,7 +88,7 @@ const PreviewPane = () => {
         aria-labelledby="preview-pane"
         className={[SPLITTER_CLASSES, VERTICAL_SPLITTER_CLASSES].join(' ')}
       />
-      <div {...getPaneProps(2, { initialSize: '0.3fr' })} className="flex flex-col bg-zinc-800">
+      <div {...getPaneProps(2, { initialSize: '0.3fr', minSize: '44px' })} className="flex flex-col bg-zinc-800">
         <PaneHeader>Console</PaneHeader>
         <SandpackConsole showHeader={false} className="flex-1 overflow-auto px-2" />
       </div>
@@ -119,7 +119,7 @@ export const CodeEditorExample = () => {
         pointerEvents: 'inherit', // Allows splitters to be dragged over preview iframe
       }}
     >
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <div className="bg-zinc-800 border-r border-zinc-600">
           <button className="p-3 border-0 border-l border-l-2 border-l-blue-500">
             <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">

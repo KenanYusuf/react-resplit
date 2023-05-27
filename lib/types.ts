@@ -4,6 +4,10 @@ export type Direction = 'horizontal' | 'vertical';
 
 export type Order = number | string;
 
+export type PxValue = `${number}px`;
+
+export type FrValue = `${number}fr`;
+
 /**
  * Configure how the resizable layout should function, e.g. the direction that the panes flow in.
  */
@@ -75,7 +79,7 @@ export interface PaneOptions {
    *
    * @defaultValue By default, the initial size is calculated as the available space divided by the number of panes.
    */
-  initialSize?: `${number}fr`;
+  initialSize?: FrValue;
   /**
    * Set the minimum size of the pane as a fractional unit (fr).
    *
@@ -83,7 +87,7 @@ export interface PaneOptions {
    *
    * @defaultValue '0fr'
    */
-  minSize?: `${number}fr`;
+  minSize?: PxValue | FrValue;
 }
 
 /**
@@ -99,7 +103,7 @@ export interface PaneProps {
    */
   'data-resplit-order': number;
   /**
-   * Data attribute marking if the pane is collapsed or not.
+   * Data attribute marking if the pane is at the minimum size or not.
    */
   'data-resplit-collapsed': boolean;
 }
@@ -115,7 +119,7 @@ export interface SplitterOptions {
    *
    * @defaultValue '10px'
    */
-  size?: `${number}px`;
+  size?: PxValue;
 }
 
 /**
@@ -181,7 +185,7 @@ export interface SplitterProps {
  */
 export interface PaneChild extends PaneOptions {
   type: 'pane';
-  minSize: `${number}fr`;
+  minSize: PxValue | FrValue;
 }
 
 /**
@@ -193,7 +197,7 @@ export interface PaneChild extends PaneOptions {
  */
 export interface SplitterChild extends SplitterOptions {
   type: 'splitter';
-  size: `${number}px`;
+  size: PxValue;
 }
 
 /**

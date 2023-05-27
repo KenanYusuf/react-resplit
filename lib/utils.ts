@@ -1,3 +1,11 @@
-export const convertFrToNumber = (val: string) => Number(val.replace('fr', ''));
+import { FrValue, PxValue } from './types';
 
-export const convertPxToNumber = (val: string) => Number(val.replace('px', ''));
+export const convertFrToNumber = (val: FrValue) => Number(val.replace('fr', ''));
+
+export const convertPxToNumber = (val: PxValue) => Number(val.replace('px', ''));
+
+export const convertPxToFr = (px: number, containerSize: number): FrValue => {
+  return `${px / containerSize}fr`;
+};
+
+export const isPx = (val: FrValue | PxValue): val is PxValue => val.includes('px');
