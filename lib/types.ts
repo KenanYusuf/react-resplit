@@ -105,7 +105,7 @@ export interface PaneProps {
   /**
    * Data attribute marking if the pane is at the minimum size or not.
    */
-  'data-resplit-min': boolean;
+  'data-resplit-collapsed': boolean;
 }
 
 /**
@@ -119,7 +119,7 @@ export interface SplitterOptions {
    *
    * @defaultValue '10px'
    */
-  size?: `${number}px`;
+  size?: PxValue;
 }
 
 /**

@@ -62,14 +62,14 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
 
     if (child.type === 'pane') {
       const paneSplitter = getChildElement(Number(order) + 1);
-      paneSplitter?.setAttribute('aria-valuenow', String(convertFrToNumber(size).toFixed(2)));
+      paneSplitter?.setAttribute('aria-valuenow', String(convertFrToNumber(size as FrValue).toFixed(2)));
     }
   };
 
-  const isPaneMinSize = (order: Order) => getChildElement(order)?.getAttribute('data-resplit-min') === 'true';
+  const getPaneCollapsed = (order: Order) => getChildElement(order)?.getAttribute('data-resplit-collapsed') === 'true';
 
-  const setPaneMinAttribute = (order: Order, isMinSize: boolean) =>
-    getChildElement(order)?.setAttribute('data-resplit-min', String(isMinSize));
+  const setPaneCollapsed = (order: Order, isCollapsed: boolean) =>
+    getChildElement(order)?.setAttribute('data-resplit-collapsed', String(isCollapsed));
 
   const getContainerSize = () =>
     (direction === 'horizontal' ? containerRef.current?.offsetWidth : containerRef.current?.offsetHeight) || 0;
@@ -86,7 +86,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       while (prevPaneIndex >= 0) {
         const pane = children[prevPaneIndex];
 
-        if (pane.type === 'splitter' || isPaneMinSize(prevPaneIndex)) {
+        if (pane.type === 'splitter' || getPaneCollapsed(prevPaneIndex)) {
           prevPaneIndex--;
           prevPane = null;
         } else {
@@ -104,7 +104,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       while (nextPaneIndex < Object.values(children).length) {
         const pane = children[nextPaneIndex];
 
-        if (pane.type === 'splitter' || isPaneMinSize(nextPaneIndex)) {
+        if (pane.type === 'splitter' || getPaneCollapsed(nextPaneIndex)) {
           nextPaneIndex++;
           nextPane = null;
         } else {
@@ -123,30 +123,30 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     const prevPaneMinSize = convertFrToNumber(
       isPx(prevPane.minSize) ? convertPxToFr(convertPxToNumber(prevPane.minSize), containerSize) : prevPane.minSize,
     );
-    const prevPaneIsMinSize = prevPaneSize <= prevPaneMinSize;
+    const prevPaneIsCollapsed = prevPaneSize <= prevPaneMinSize;
 
     let nextPaneSize = getChildSize(nextPaneIndex) - delta;
     const nextPaneMinSize = convertFrToNumber(
       isPx(nextPane.minSize) ? convertPxToFr(convertPxToNumber(nextPane.minSize), containerSize) : nextPane.minSize,
     );
-    const nextPaneIsMinSize = nextPaneSize <= nextPaneMinSize;
+    const nextPaneIsCollapsed = nextPaneSize <= nextPaneMinSize;
 
-    if (prevPaneIsMinSize) {
+    if (prevPaneIsCollapsed) {
       console.log({ prevPaneSize, prevPaneMinSize });
       nextPaneSize = nextPaneSize + (prevPaneSize - prevPaneMinSize);
       prevPaneSize = prevPaneMinSize;
     }
 
-    if (nextPaneIsMinSize) {
+    if (nextPaneIsCollapsed) {
       prevPaneSize = prevPaneSize + (nextPaneSize - nextPaneMinSize);
       nextPaneSize = nextPaneMinSize;
     }
 
     setChildSize(prevPaneIndex, `${prevPaneSize}fr`);
-    setPaneMinAttribute(prevPaneIndex, prevPaneIsMinSize);
+    setPaneCollapsed(prevPaneIndex, prevPaneIsCollapsed);
 
     setChildSize(nextPaneIndex, `${nextPaneSize}fr`);
-    setPaneMinAttribute(nextPaneIndex, nextPaneIsMinSize);
+    setPaneCollapsed(nextPaneIndex, nextPaneIsCollapsed);
   };
 
   /**
@@ -253,7 +253,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     } else if (e.key === 'End') {
       resizeByDelta(splitterOrder, 1);
     } else if (e.key === 'Enter') {
-      if (isPaneMinSize(splitterOrder - 1)) {
+      if (getPaneCollapsed(splitterOrder - 1)) {
         const initialSize = (children[splitterOrder - 1] as PaneChild).initialSize || '1fr';
         resizeByDelta(splitterOrder, convertFrToNumber(initialSize));
       } else {
@@ -276,7 +276,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       const child = children[order];
 
       if (child.type === 'pane') {
-        const paneSize = isPaneMinSize(order) ? '0fr' : child.initialSize || `${1 / paneCount}fr`;
+        const paneSize = getPaneCollapsed(order) ? '0fr' : child.initialSize || `${1 / paneCount}fr`;
         setChildSize(order, paneSize);
       } else {
         setChildSize(order, child.size);
@@ -307,7 +307,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     // Return pane props
     return {
       'data-resplit-order': order,
-      'data-resplit-min': false,
+      'data-resplit-collapsed': false,
       id: `resplit-${id}-${order}`,
     };
   };

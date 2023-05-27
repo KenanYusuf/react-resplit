@@ -143,11 +143,11 @@ An optional second argument, used to configure the initial size of the pane as w
 
 Properties needed for the pane element.
 
-| Name                 | Type      | Description                                                                    |
-| -------------------- | --------- | ------------------------------------------------------------------------------ |
-| `id`                 | `string`  | A random ID, referenced by the associated splitter's `aria-controls` attribute |
-| `data-resplit-order` | `number`  | Data attribute set to the order of the pane                                    |
-| `data-resplit-min`   | `boolean` | Data attribute marking if the pane is at the minimum size or not               |
+| Name                     | Type      | Description                                                                    |
+| ------------------------ | --------- | ------------------------------------------------------------------------------ |
+| `id`                     | `string`  | A random ID, referenced by the associated splitter's `aria-controls` attribute |
+| `data-resplit-order`     | `number`  | Data attribute set to the order of the pane                                    |
+| `data-resplit-collapsed` | `boolean` | Data attribute marking if the pane is collapsed or not                         |
 
 ### getSplitterProps `(order: number, options?: SplitterOptions) => SplitterProps`
 
