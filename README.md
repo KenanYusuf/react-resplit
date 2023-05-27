@@ -134,20 +134,20 @@ Given an order as the first argument, returns the props for the pane element.
 
 An optional second argument, used to configure the initial size of the pane as well the minimum size.
 
-| Name          | Type          | Default                               | Description                                                |
-| ------------- | ------------- | ------------------------------------- | ---------------------------------------------------------- |
-| `initialSize` | `${number}fr` | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr) |
-| `minSize`     | `${number}fr` | `"0fr"`                                 | Set the minimum size of the pane as a fractional unit (fr) |
+| Name          | Type          | Default                               | Description                                                              |
+| ------------- | ------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+| `initialSize` | `${number}fr` | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr)               |
+| `minSize`     | `${number}fr` | `"0fr"`                               | Set the minimum size of the pane as a fractional (fr) or pixel (px) unit |
 
 #### PaneProps `object`
 
 Properties needed for the pane element.
 
-| Name                     | Type      | Description                                                                    |
-| ------------------------ | --------- | ------------------------------------------------------------------------------ |
-| `id`                     | `string`  | A random ID, referenced by the associated splitter's `aria-controls` attribute |
-| `data-resplit-order`     | `number`  | Data attribute set to the order of the pane                                    |
-| `data-resplit-collapsed` | `boolean` | Data attribute marking if the pane is collapsed or not                         |
+| Name                 | Type      | Description                                                                    |
+| -------------------- | --------- | ------------------------------------------------------------------------------ |
+| `id`                 | `string`  | A random ID, referenced by the associated splitter's `aria-controls` attribute |
+| `data-resplit-order` | `number`  | Data attribute set to the order of the pane                                    |
+| `data-resplit-min`   | `boolean` | Data attribute marking if the pane is at the minimum size or not               |
 
 ### getSplitterProps `(order: number, options?: SplitterOptions) => SplitterProps`
 
@@ -157,9 +157,9 @@ Given an order as the first argument, returns the props for the splitter element
 
 An optional second argument, used to configure the size of the splitter element
 
-| Name   | Type          | Default   | Description                                  |
-| ------ | ------------- | --------- | -------------------------------------------- |
-| `size` | `${number}px` | `"10px"`  | Set the size of the splitter as a pixel unit |
+| Name   | Type          | Default  | Description                                  |
+| ------ | ------------- | -------- | -------------------------------------------- |
+| `size` | `${number}px` | `"10px"` | Set the size of the splitter as a pixel unit |
 
 #### SplitterProps `object`
 

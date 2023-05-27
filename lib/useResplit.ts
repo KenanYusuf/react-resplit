@@ -6,8 +6,8 @@ import {
   PANE_DEFAULT_MIN_SIZE,
   DEFAULT_OPTIONS,
 } from './const';
-import { ResplitOptions, ResplitMethods, ChildrenState, PaneChild, Order } from './types';
-import { convertFrToNumber, convertPxToNumber } from './utils';
+import { ResplitOptions, ResplitMethods, ChildrenState, PaneChild, Order, FrValue, PxValue } from './types';
+import { convertFrToNumber, convertPxToFr, convertPxToNumber, isPx } from './utils';
 
 /**
  * The `useResplit` hook is how resizable layouts are initialised.
@@ -51,10 +51,12 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
   const getChildSize = (order: Order) => {
     const childSize = containerRef.current?.style.getPropertyValue(`--resplit-${order}`);
     if (!childSize) return 0;
-    return childSize?.includes('fr') ? convertFrToNumber(childSize) : convertPxToNumber(childSize);
+    return isPx(childSize as PxValue | FrValue)
+      ? convertPxToNumber(childSize as PxValue)
+      : convertFrToNumber(childSize as FrValue);
   };
 
-  const setChildSize = (order: Order, size: string) => {
+  const setChildSize = (order: Order, size: FrValue | PxValue) => {
     containerRef.current?.style.setProperty(`--resplit-${order}`, size);
     const child = children[order];
 
@@ -64,10 +66,13 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     }
   };
 
-  const getPaneCollapsed = (order: Order) => getChildElement(order)?.getAttribute('data-resplit-collapsed') === 'true';
+  const isPaneMinSize = (order: Order) => getChildElement(order)?.getAttribute('data-resplit-min') === 'true';
 
-  const setPaneCollapsed = (order: Order, collapsed: boolean) =>
-    getChildElement(order)?.setAttribute('data-resplit-collapsed', String(collapsed));
+  const setPaneMinAttribute = (order: Order, isMinSize: boolean) =>
+    getChildElement(order)?.setAttribute('data-resplit-min', String(isMinSize));
+
+  const getContainerSize = () =>
+    (direction === 'horizontal' ? containerRef.current?.offsetWidth : containerRef.current?.offsetHeight) || 0;
 
   const resizeByDelta = (splitterOrder: Order, delta: number) => {
     const isGrowing = delta > 0;
@@ -81,7 +86,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       while (prevPaneIndex >= 0) {
         const pane = children[prevPaneIndex];
 
-        if (pane.type === 'splitter' || getPaneCollapsed(prevPaneIndex)) {
+        if (pane.type === 'splitter' || isPaneMinSize(prevPaneIndex)) {
           prevPaneIndex--;
           prevPane = null;
         } else {
@@ -99,7 +104,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       while (nextPaneIndex < Object.values(children).length) {
         const pane = children[nextPaneIndex];
 
-        if (pane.type === 'splitter' || getPaneCollapsed(nextPaneIndex)) {
+        if (pane.type === 'splitter' || isPaneMinSize(nextPaneIndex)) {
           nextPaneIndex++;
           nextPane = null;
         } else {
@@ -112,29 +117,36 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     // Return if no panes are resizable
     if (!prevPane || !nextPane) return;
 
+    const containerSize = getContainerSize();
+
     let prevPaneSize = getChildSize(prevPaneIndex) + delta;
-    const prevPaneMinSize = convertFrToNumber(prevPane.minSize);
-    const prevPaneIsCollapsed = prevPaneSize <= prevPaneMinSize;
+    const prevPaneMinSize = convertFrToNumber(
+      isPx(prevPane.minSize) ? convertPxToFr(convertPxToNumber(prevPane.minSize), containerSize) : prevPane.minSize,
+    );
+    const prevPaneIsMinSize = prevPaneSize <= prevPaneMinSize;
 
     let nextPaneSize = getChildSize(nextPaneIndex) - delta;
-    const nextPaneMinSize = convertFrToNumber(nextPane.minSize);
-    const nextPaneIsCollapsed = nextPaneSize <= nextPaneMinSize;
+    const nextPaneMinSize = convertFrToNumber(
+      isPx(nextPane.minSize) ? convertPxToFr(convertPxToNumber(nextPane.minSize), containerSize) : nextPane.minSize,
+    );
+    const nextPaneIsMinSize = nextPaneSize <= nextPaneMinSize;
 
-    if (prevPaneIsCollapsed) {
+    if (prevPaneIsMinSize) {
+      console.log({ prevPaneSize, prevPaneMinSize });
       nextPaneSize = nextPaneSize + (prevPaneSize - prevPaneMinSize);
       prevPaneSize = prevPaneMinSize;
     }
 
-    if (nextPaneIsCollapsed) {
+    if (nextPaneIsMinSize) {
       prevPaneSize = prevPaneSize + (nextPaneSize - nextPaneMinSize);
       nextPaneSize = nextPaneMinSize;
     }
 
     setChildSize(prevPaneIndex, `${prevPaneSize}fr`);
-    setPaneCollapsed(prevPaneIndex, prevPaneIsCollapsed);
+    setPaneMinAttribute(prevPaneIndex, prevPaneIsMinSize);
 
     setChildSize(nextPaneIndex, `${nextPaneSize}fr`);
-    setPaneCollapsed(nextPaneIndex, nextPaneIsCollapsed);
+    setPaneMinAttribute(nextPaneIndex, nextPaneIsMinSize);
   };
 
   /**
@@ -157,9 +169,8 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       (total, [order, child]) => total + (child.type === 'splitter' ? getChildSize(order) : 0),
       0,
     );
-    const containerSize =
-      direction === 'horizontal' ? containerRef.current?.offsetWidth : containerRef.current?.offsetHeight;
-    const availableSpace = (containerSize || 0) - combinedSplitterSize;
+
+    const availableSpace = getContainerSize() - combinedSplitterSize;
 
     // Calculate delta
     const splitterRect = splitter.getBoundingClientRect();
@@ -242,7 +253,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     } else if (e.key === 'End') {
       resizeByDelta(splitterOrder, 1);
     } else if (e.key === 'Enter') {
-      if (getPaneCollapsed(splitterOrder - 1)) {
+      if (isPaneMinSize(splitterOrder - 1)) {
         const initialSize = (children[splitterOrder - 1] as PaneChild).initialSize || '1fr';
         resizeByDelta(splitterOrder, convertFrToNumber(initialSize));
       } else {
@@ -253,10 +264,11 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
 
   /**
    * Recalculate pane sizes when children are added or removed
-   * TODO: Is it ok to use the length of the object keys as a dependency?
    * TODO: Should we use a ref for the children object? Would this allow us to trigger this useLayoutEffect still?
    * TODO: Should we split children into panes and splitters? Would make accessing them easier
    */
+  const childrenLength = Object.keys(children).length;
+
   useLayoutEffect(() => {
     const paneCount = Object.values(children).filter((child) => child.type === 'pane').length;
 
@@ -264,13 +276,14 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       const child = children[order];
 
       if (child.type === 'pane') {
-        const paneSize = getPaneCollapsed(order) ? '0fr' : child.initialSize || `${1 / paneCount}fr`;
+        const paneSize = isPaneMinSize(order) ? '0fr' : child.initialSize || `${1 / paneCount}fr`;
         setChildSize(order, paneSize);
       } else {
         setChildSize(order, child.size);
       }
     });
-  }, [Object.keys(children).length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childrenLength]);
 
   /**
    * Public API
@@ -294,7 +307,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     // Return pane props
     return {
       'data-resplit-order': order,
-      'data-resplit-collapsed': false,
+      'data-resplit-min': false,
       id: `resplit-${id}-${order}`,
     };
   };
