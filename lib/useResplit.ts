@@ -263,8 +263,6 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
 
   /**
    * Recalculate pane sizes when children are added or removed
-   * TODO: Should we use a ref for the children object? Would this allow us to trigger this useLayoutEffect still?
-   * TODO: Should we split children into panes and splitters? Would make accessing them easier
    */
   const childrenLength = Object.keys(children).length;
 
@@ -303,7 +301,6 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       }));
     }
 
-    // Return pane props
     return {
       'data-resplit-order': order,
       'data-resplit-collapsed': false,
@@ -324,7 +321,6 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       }));
     }
 
-    // Return splitter props
     return {
       role: 'separator',
       tabIndex: 0,
@@ -341,28 +337,31 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     };
   };
 
-  const getContainerProps: ResplitMethods['getContainerProps'] = () => {
-    // Return container props
-    return {
-      'data-resplit-direction': direction,
-      'data-resplit-resizing': false,
-      style: {
-        display: 'grid',
-        overflow: 'hidden',
-        [GRID_TEMPLATE_BY_DIRECTION[direction]]: Object.keys(children).reduce((value, order) => {
-          const childVar = `minmax(0, var(--resplit-${order}))`;
-          return value ? `${value} ${childVar}` : `${childVar}`;
-        }, ''),
-      },
-      ref: (element: HTMLDivElement) => {
-        containerRef.current = element;
-      },
-    };
-  };
+  const getHandleProps = (order: number) => ({
+    style: { cursor: CURSOR_BY_DIRECTION[direction] },
+    onMouseDown: handleMouseDown(order),
+  });
+
+  const getContainerProps: ResplitMethods['getContainerProps'] = () => ({
+    'data-resplit-direction': direction,
+    'data-resplit-resizing': false,
+    style: {
+      display: 'grid',
+      overflow: 'hidden',
+      [GRID_TEMPLATE_BY_DIRECTION[direction]]: Object.keys(children).reduce((value, order) => {
+        const childVar = `minmax(0, var(--resplit-${order}))`;
+        return value ? `${value} ${childVar}` : `${childVar}`;
+      }, ''),
+    },
+    ref: (element: HTMLDivElement) => {
+      containerRef.current = element;
+    },
+  });
 
   return {
     getContainerProps,
     getPaneProps,
     getSplitterProps,
+    getHandleProps,
   };
 };

@@ -69,14 +69,16 @@ const styleCode = `body {
 `;
 
 const PaneHeader = ({ children, id }: { children: React.ReactNode; id?: string }) => (
-  <h3 className="px-4 py-3" id={id}>
+  <h3 className="flex gap-4 px-4 py-3" id={id}>
     {children}
   </h3>
 );
 
 const PreviewPane = () => {
   const resplitMethods = useResplit({ direction: 'vertical' });
-  const { getContainerProps, getSplitterProps, getPaneProps } = resplitMethods;
+  const { getContainerProps, getSplitterProps, getPaneProps, getHandleProps } = resplitMethods;
+  const [tab, setTab] = React.useState<'console' | 'problems'>('console');
+
   return (
     <div className="h-full" {...getContainerProps()}>
       <div {...getPaneProps(0, { initialSize: '0.7fr' })} className="flex flex-col bg-zinc-800">
@@ -88,8 +90,28 @@ const PreviewPane = () => {
         aria-labelledby="preview-pane"
         className={[SPLITTER_CLASSES, VERTICAL_SPLITTER_CLASSES].join(' ')}
       />
-      <div {...getPaneProps(2, { initialSize: '0.3fr', minSize: '44px' })} className="flex flex-col bg-zinc-800">
-        <PaneHeader>Console</PaneHeader>
+      <div
+        {...getPaneProps(2, { initialSize: '0.3fr', minSize: '44px' })}
+        className="relative z-10 flex flex-col bg-zinc-800"
+      >
+        <div {...getHandleProps(1)}>
+          <PaneHeader>
+            <button
+              className={tab === 'console' ? 'underline' : ''}
+              onClick={() => setTab('console')}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              Console
+            </button>
+            <button
+              className={tab === 'problems' ? 'underline' : ''}
+              onClick={() => setTab('problems')}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              Problems
+            </button>
+          </PaneHeader>
+        </div>
         <SandpackConsole showHeader={false} className="flex-1 overflow-auto px-2" />
       </div>
     </div>
@@ -121,7 +143,7 @@ export const CodeEditorExample = () => {
     >
       <div className="flex flex-1 overflow-hidden">
         <div className="bg-zinc-800 border-r border-zinc-600">
-          <button className="p-3 border-0 border-l border-l-2 border-l-blue-500">
+          <button className="p-3 border-0 border-l-2 border-l-blue-500">
             <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
               <path
                 d="M3.5 2C3.22386 2 3 2.22386 3 2.5V12.5C3 12.7761 3.22386 13 3.5 13H11.5C11.7761 13 12 12.7761 12 12.5V6H8.5C8.22386 6 8 5.77614 8 5.5V2H3.5ZM9 2.70711L11.2929 5H9V2.70711ZM2 2.5C2 1.67157 2.67157 1 3.5 1H8.5C8.63261 1 8.75979 1.05268 8.85355 1.14645L12.8536 5.14645C12.9473 5.24021 13 5.36739 13 5.5V12.5C13 13.3284 12.3284 14 11.5 14H3.5C2.67157 14 2 13.3284 2 12.5V2.5Z"

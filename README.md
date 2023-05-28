@@ -107,11 +107,12 @@ Configure how the resizable layout should function, e.g. the direction that the 
 
 The `useResplit` hook returns the methods needed to register the container, panes and splitters. Each method returns an object of properties that should be spread to the relevant element.
 
-| Name                | Type                                                          | Description                            |
-| ------------------- | ------------------------------------------------------------- | -------------------------------------- |
-| `getContainerProps` | `() => ContainerProps`                                        | Used to register the container element |
-| `getPaneProps`      | `(order: number, options?: PaneOptions) => PaneProps`         | Used to register pane elements         |
-| `getSplitterProps`  | `(order: number, options?: SplitterOptions) => SplitterProps` | Used to register splitter elements     |
+| Name                | Type                                                          |
+| ------------------- | ------------------------------------------------------------- |
+| `getContainerProps` | `() => ContainerProps`                                        |
+| `getPaneProps`      | `(order: number, options?: PaneOptions) => PaneProps`         |
+| `getSplitterProps`  | `(order: number, options?: SplitterOptions) => SplitterProps` |
+| `getHandleProps`    | `(order: number) => HandleProps`                              |
 
 ### getContainerProps `() => ContainerProps`
 
@@ -179,3 +180,16 @@ Properties needed for the splitter element.
 | `style`               | `React.CSSProperties`                                  | Style object for the splitter element                                               |
 | `onMouseDown`         | `() => void`                                           | Mousedown event handler                                                             |
 | `onKeyDown`           | `(event: React.KeyboardEvent<HTMLDivElement>) => void` | Keydown event handler                                                               |
+
+### getHandleProps `(order: number) => HandleProps`
+
+Given an order as the first argument, returns the props for the handle element. The order should be the same as the associated splitter.
+
+#### HandleProps `object`
+
+Properties needed for the handle element.
+
+| Name          | Type                  | Description                         |
+| ------------- | --------------------- | ----------------------------------- |
+| `style`       | `React.CSSProperties` | Style object for the handle element |
+| `onMouseDown` | `() => void`          | Mousedown event handler             |

@@ -52,6 +52,14 @@ export interface ResplitMethods {
    * @returns Splitter props object {@link SplitterProps}
    */
   getSplitterProps: (order: number, options?: SplitterOptions) => SplitterProps;
+  /**
+   * Given an order as the first argument, returns the props for the handle element.
+   *
+   * @param order - The order of the splitter that this handle controls. {@link Order}
+   *
+   * @returns Handle props object {@link HandleProps}
+   */
+  getHandleProps: (order: number) => HandleProps;
 }
 
 /**
@@ -174,6 +182,20 @@ export interface SplitterProps {
    * Keydown event handler.
    */
   onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+}
+
+/**
+ * Properties needed for the handle element.
+ */
+export interface HandleProps {
+  /**
+   * Style object for the handle element.
+   */
+  style: CSSProperties;
+  /**
+   * Mousedown event handler.
+   */
+  onMouseDown: () => void;
 }
 
 /**
