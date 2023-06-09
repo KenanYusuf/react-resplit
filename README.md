@@ -113,6 +113,8 @@ The `useResplit` hook returns the methods needed to register the container, pane
 | `getPaneProps`      | `(order: number, options?: PaneOptions) => PaneProps`         |
 | `getSplitterProps`  | `(order: number, options?: SplitterOptions) => SplitterProps` |
 | `getHandleProps`    | `(order: number) => HandleProps`                              |
+| `setPaneSize`       | `(paneSizes: FrValue[]) => void`                              |
+| `getPaneCollapsed`  | `(order: number) => boolean`                                  |
 
 ### getContainerProps `() => ContainerProps`
 
@@ -135,10 +137,13 @@ Given an order as the first argument, returns the props for the pane element.
 
 An optional second argument, used to configure the initial size of the pane as well the minimum size.
 
-| Name          | Type          | Default                               | Description                                                              |
-| ------------- | ------------- | ------------------------------------- | ------------------------------------------------------------------------ |
-| `initialSize` | `${number}fr` | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr)               |
-| `minSize`     | `${number}fr` | `"0fr"`                               | Set the minimum size of the pane as a fractional (fr) or pixel (px) unit |
+| Name            | Type                           | Default                               | Description                                                               |
+| --------------- | ------------------------------ | ------------------------------------- | ------------------------------------------------------------------------- |
+| `initialSize`   | `${number}fr`                  | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr)                |
+| `minSize`       | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the minimum size of the pane as a fractional (fr) or pixel (px) unit  |
+| `onResizeStart` | `() => void`                   |                                       | Callback function that is called when the pane starts being resized.      |
+| `onResize`      | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized. |
+| `onResizeEnd`   | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized. |
 
 #### PaneProps `object`
 
@@ -193,3 +198,43 @@ Properties needed for the handle element.
 | ------------- | --------------------- | ----------------------------------- |
 | `style`       | `React.CSSProperties` | Style object for the handle element |
 | `onMouseDown` | `() => void`          | Mousedown event handler             |
+
+### setPaneSize `(paneSizes: FrValue[]) => void`
+
+Get the collapsed state of a pane.
+
+Specify the size of each pane as a fractional unit (fr). The number of values should match the number of panes.
+
+```tsx
+setPaneSize(['0.6fr', '0.4fr']);
+```
+
+### getPaneCollapsed `(order: number) => boolean`
+
+Get the collapsed state of a pane.
+
+**Note**: The returned value will not update on every render and should be used in a callback e.g. used in combination with a pane's `onResize` callback.
+
+```tsx
+import { useResplit } from 'react-resplit';
+
+function App() {
+  const { getContainerProps, getSplitterProps, getPaneProps, getPaneCollapsed } = useResplit({
+    direction: 'horizontal',
+  });
+
+  const handleResize = () => {
+    if (isPaneCollapsed(2)) {
+      // Do something
+    }
+  };
+
+  return (
+    <div {...getContainerProps()}>
+      <div {...getPaneProps(0, { initialSize: '0.5fr' })}>Pane 1</div>
+      <div {...getSplitterProps(1, { size: '10px' })} />
+      <div {...getPaneProps(2, { initialSize: '0.5fr', onResize: handleResize })}>Pane 2</div>
+    </div>
+  );
+}
+```

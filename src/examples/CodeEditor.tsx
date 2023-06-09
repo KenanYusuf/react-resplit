@@ -1,6 +1,5 @@
-import React from 'react';
-import * as resplit from 'resplit';
-const { useResplit } = resplit;
+import React, { useState } from 'react';
+import { useResplit } from 'resplit';
 import {
   SandpackProvider,
   SandpackCodeEditor,
@@ -14,7 +13,7 @@ const SPLITTER_CLASSES =
 
 const HORIZONTAL_SPLITTER_CLASSES = 'before:w-[7px] before:-left-[3px]';
 
-const VERTICAL_SPLITTER_CLASSES = 'before:h-[7px] before:-top-[3px]';
+// const VERTICAL_SPLITTER_CLASSES = 'before:h-[7px] before:-top-[3px]';
 
 const appCode = `import { useResplit } from 'react-resplit';
 import './style.css';
@@ -76,42 +75,70 @@ const PaneHeader = ({ children, id }: { children: React.ReactNode; id?: string }
 
 const PreviewPane = () => {
   const resplitMethods = useResplit({ direction: 'vertical' });
-  const { getContainerProps, getSplitterProps, getPaneProps, getHandleProps } = resplitMethods;
+  const { getContainerProps, getSplitterProps, getPaneProps, setPaneSizes, getPaneCollapsed } = resplitMethods;
   const [tab, setTab] = React.useState<'console' | 'problems'>('console');
+  const [collapsed, setCollapsed] = useState(false);
+
+  const handleResize = () => {
+    if (getPaneCollapsed(2)) {
+      setCollapsed(true);
+    } else {
+      setCollapsed(false);
+    }
+  };
 
   return (
     <div className="h-full" {...getContainerProps()}>
-      <div {...getPaneProps(0, { initialSize: '0.7fr' })} className="flex flex-col bg-zinc-800">
-        <PaneHeader id="preview-pane">Preview</PaneHeader>
+      <div {...getPaneProps(0, { initialSize: '0.7fr' })} className="relative flex flex-col bg-zinc-800">
+        <PaneHeader>Preview</PaneHeader>
         <SandpackPreview className="flex-1" />
       </div>
+
+      <div {...getSplitterProps(1, { size: '48px' })}>
+        <PaneHeader>
+          <button
+            className={tab === 'console' ? 'underline' : ''}
+            onClick={() => setTab('console')}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            Console
+          </button>
+          <button
+            className={tab === 'problems' ? 'underline' : ''}
+            onClick={() => setTab('problems')}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            Problems
+          </button>
+          <button
+            className={`flex items-center justify-center h-6 w-6 ml-auto hover:bg-zinc-700 ${
+              collapsed ? 'transform rotate-180' : ''
+            }`}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+            }}
+            onClick={() => {
+              setPaneSizes(collapsed ? ['0.4fr', '0.6fr'] : ['1fr', '0fr']);
+              setCollapsed(!collapsed);
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M3.13523 6.15803C3.3241 5.95657 3.64052 5.94637 3.84197 6.13523L7.5 9.56464L11.158 6.13523C11.3595 5.94637 11.6759 5.95657 11.8648 6.15803C12.0536 6.35949 12.0434 6.67591 11.842 6.86477L7.84197 10.6148C7.64964 10.7951 7.35036 10.7951 7.15803 10.6148L3.15803 6.86477C2.95657 6.67591 2.94637 6.35949 3.13523 6.15803Z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+        </PaneHeader>
+      </div>
+
       <div
-        {...getSplitterProps(1, { size: '1px' })}
-        aria-labelledby="preview-pane"
-        className={[SPLITTER_CLASSES, VERTICAL_SPLITTER_CLASSES].join(' ')}
-      />
-      <div
-        {...getPaneProps(2, { initialSize: '0.3fr', minSize: '44px' })}
+        {...getPaneProps(2, {
+          initialSize: '0.3fr',
+          onResize: handleResize,
+        })}
         className="relative z-10 flex flex-col bg-zinc-800"
       >
-        <div {...getHandleProps(1)}>
-          <PaneHeader>
-            <button
-              className={tab === 'console' ? 'underline' : ''}
-              onClick={() => setTab('console')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              Console
-            </button>
-            <button
-              className={tab === 'problems' ? 'underline' : ''}
-              onClick={() => setTab('problems')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              Problems
-            </button>
-          </PaneHeader>
-        </div>
         <SandpackConsole showHeader={false} className="flex-1 overflow-auto px-2" />
       </div>
     </div>

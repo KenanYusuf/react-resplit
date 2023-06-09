@@ -2,7 +2,7 @@ import { CSSProperties, LegacyRef, ReactNode } from 'react';
 
 export type Direction = 'horizontal' | 'vertical';
 
-export type Order = number | string;
+export type Order = number;
 
 export type PxValue = `${number}px`;
 
@@ -60,6 +60,23 @@ export interface ResplitMethods {
    * @returns Handle props object {@link HandleProps}
    */
   getHandleProps: (order: number) => HandleProps;
+  /**
+   * Specify the size of each pane as a fractional unit (fr).
+   * The number of values should match the number of panes.
+   *
+   * @param paneSizes - An array of fractional unit (fr) values. {@link FrValue}
+   *
+   * @example ['0.25fr', '0.25fr', '0.5fr']
+   */
+  setPaneSizes: (paneSizes: FrValue[]) => void;
+  /**
+   * Get the collapsed state of a pane.
+   *
+   * @param order - The order of the pane. {@link Order}
+   *
+   * @returns A boolean indicating if the pane is collapsed or not.
+   */
+  getPaneCollapsed: (order: number) => boolean;
 }
 
 /**
@@ -96,6 +113,22 @@ export interface PaneOptions {
    * @defaultValue '0fr'
    */
   minSize?: PxValue | FrValue;
+  /**
+   * Callback function that is called when the pane starts being resized.
+   */
+  onResizeStart?: () => void;
+  /**
+   * Callback function that is called when the pane is finished being resized.
+   *
+   * @param size - The new size of the pane. {@link FrValue}
+   */
+  onResizeEnd?: (size: FrValue) => void;
+  /**
+   * Callback function that is called when the pane is actively being resized.
+   *
+   * @param size - The new size of the pane. {@link FrValue}
+   */
+  onResize?: (size: FrValue) => void;
 }
 
 /**
