@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import {
   CURSOR_BY_DIRECTION,
   SPLITTER_DEFAULT_SIZE,
@@ -7,7 +7,7 @@ import {
   DEFAULT_OPTIONS,
 } from './const';
 import { ResplitOptions, ResplitMethods, ChildrenState, PaneChild, Order, FrValue, PxValue } from './types';
-import { convertFrToNumber, convertPxToFr, convertPxToNumber, isPx } from './utils';
+import { convertFrToNumber, convertPxToFr, convertPxToNumber, isPx, useIsomorphicLayoutEffect } from './utils';
 
 /**
  * The `useResplit` hook is how resizable layouts are initialised.
@@ -286,7 +286,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
    */
   const childrenLength = Object.keys(children).length;
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const paneCount = Object.values(children).filter((child) => child.type === 'pane').length;
 
     Object.keys(children).forEach((order) => {

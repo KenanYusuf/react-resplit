@@ -1,3 +1,4 @@
+import { useEffect, useLayoutEffect } from 'react';
 import { FrValue, PxValue } from './types';
 
 export const convertFrToNumber = (val: FrValue) => Number(val.replace('fr', ''));
@@ -9,3 +10,5 @@ export const convertPxToFr = (px: number, containerSize: number): FrValue => {
 };
 
 export const isPx = (val: FrValue | PxValue): val is PxValue => val.includes('px');
+
+export const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
