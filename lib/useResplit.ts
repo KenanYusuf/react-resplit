@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { ReactNode, useCallback, useId, useRef, useState } from 'react';
 import {
   CURSOR_BY_DIRECTION,
   SPLITTER_DEFAULT_SIZE,
@@ -303,60 +303,53 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenLength]);
 
+  const registerChild = useCallback(
+    (order: number, value: ChildrenState[number]) => (node: ReactNode) => {
+      if (node !== null && !children[order]) {
+        setChildren((currentChildren) => ({
+          ...currentChildren,
+          [order]: value,
+        }));
+      }
+    },
+    [children],
+  );
+
   /**
    * Public API
    * - Everything below is returned by the hook
    * - Each function returns a set of props to be spread onto the relevant element
    * - Each function also registers the element with the hook
    */
-  const getPaneProps: ResplitMethods['getPaneProps'] = (order, options = {}) => {
-    // Register pane
-    if (!children[order]) {
-      setChildren((currentChildren) => ({
-        ...currentChildren,
-        [order]: {
-          ...options,
-          type: 'pane',
-          minSize: options.minSize || PANE_DEFAULT_MIN_SIZE,
-        },
-      }));
-    }
+  const getPaneProps: ResplitMethods['getPaneProps'] = (order, options = {}) => ({
+    'data-resplit-order': order,
+    'data-resplit-collapsed': false,
+    id: `resplit-${id}-${order}`,
+    ref: registerChild(order, {
+      type: 'pane',
+      minSize: options.minSize || PANE_DEFAULT_MIN_SIZE,
+    }),
+  });
 
-    return {
-      'data-resplit-order': order,
-      'data-resplit-collapsed': false,
-      id: `resplit-${id}-${order}`,
-    };
-  };
-
-  const getSplitterProps: ResplitMethods['getSplitterProps'] = (order, options = {}) => {
-    // Register splitter
-    if (!children[order]) {
-      setChildren((currentChildren) => ({
-        ...currentChildren,
-        [order]: {
-          ...options,
-          type: 'splitter',
-          size: options.size || SPLITTER_DEFAULT_SIZE,
-        },
-      }));
-    }
-
-    return {
-      role: 'separator',
-      tabIndex: 0,
-      'aria-orientation': direction,
-      'aria-valuemin': 0,
-      'aria-valuemax': 1,
-      'aria-valuenow': 1,
-      'aria-controls': `resplit-${id}-${order - 1}`,
-      'data-resplit-order': order,
-      'data-resplit-active': false,
-      style: { cursor: CURSOR_BY_DIRECTION[direction] },
-      onMouseDown: handleMouseDown(order),
-      onKeyDown: handleKeyDown(order),
-    };
-  };
+  const getSplitterProps: ResplitMethods['getSplitterProps'] = (order, options = {}) => ({
+    role: 'separator',
+    tabIndex: 0,
+    'aria-orientation': direction,
+    'aria-valuemin': 0,
+    'aria-valuemax': 1,
+    'aria-valuenow': 1,
+    'aria-controls': `resplit-${id}-${order - 1}`,
+    'data-resplit-order': order,
+    'data-resplit-active': false,
+    style: { cursor: CURSOR_BY_DIRECTION[direction] },
+    onMouseDown: handleMouseDown(order),
+    onKeyDown: handleKeyDown(order),
+    ref: registerChild(order, {
+      ...options,
+      type: 'splitter',
+      size: options.size || SPLITTER_DEFAULT_SIZE,
+    }),
+  });
 
   const getHandleProps = (order: number) => ({
     style: { cursor: CURSOR_BY_DIRECTION[direction] },
