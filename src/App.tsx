@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { CodeEditorExample } from './examples/CodeEditor';
 import { ImageCompareExample } from './examples/ImageCompare';
-import { ContextExample } from './examples/Context';
 
 const examples = [
   {
@@ -11,10 +10,6 @@ const examples = [
   {
     name: 'Image Compare',
     component: ImageCompareExample,
-  },
-  {
-    name: 'Context',
-    component: ContextExample,
   },
 ];
 
