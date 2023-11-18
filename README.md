@@ -7,7 +7,10 @@ Resizable split pane layouts for React applications 🖖
 - Works with any amount of panes in a vertical or horizontal layout
 - Built following the [Window Splitter](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/) pattern for accessibility and keyboard controls
 
-![react-resplit](https://user-images.githubusercontent.com/9557798/209449017-e648a053-f0de-49b1-bc8f-d56b4ddcf5db.gif)
+
+
+https://github.com/KenanYusuf/react-resplit/assets/9557798/d47ef278-bcb1-4c2b-99e6-7a9f99943f96
+
 _Example of a code editor built with `react-resplit`_
 
 ## Development
