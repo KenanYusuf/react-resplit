@@ -15,35 +15,32 @@ const HORIZONTAL_SPLITTER_CLASSES = 'before:w-[7px] before:-left-[3px]';
 
 // const VERTICAL_SPLITTER_CLASSES = 'before:h-[7px] before:-top-[3px]';
 
-const appCode = `import { useResplit } from 'react-resplit';
+const appCode = `import { Resplit } from 'react-resplit';
 import './style.css';
 
 function App() {
-  const {
-    getContainerProps,
-    getSplitterProps,
-    getPaneProps
-  } = useResplit({ direction: 'horizontal' });
-
   return (
-    <div {...getContainerProps()}>
-      <div
+    <Resplit.Root direction="horizontal">
+      <Resplit.Pane
         className="pane"
-        {...getPaneProps(0, { initialSize: '0.5fr' })}
+        order="0"
+        initialSize="0.5fr"
       >
         Pane 1
-      </div>
-      <div
+      </Resplit.Pane>
+      <Resplit.Splitter
         className="splitter"
-        {...getSplitterProps(1, { size: '10px' })}
+        order={1}
+        size="10px"
       />
-      <div
+      <Resplit.Pane
         className="pane"
-        {...getPaneProps(2, { initialSize: '0.5fr' })}
+        order={2}
+        initialSize="0.5fr"
       >
         Pane 2
-      </div>
-    </div>
+      </Resplit.Pane>
+    </Resplit.Root>
   );
 };
 
