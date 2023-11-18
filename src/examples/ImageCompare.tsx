@@ -1,4 +1,4 @@
-import { useResplit } from 'resplit';
+import { Resplit } from 'resplit';
 
 const PANE_CLASSES = 'relative w-full h-full';
 
@@ -20,29 +20,26 @@ const ChevronRight = () => (
 );
 
 export const ImageCompareExample = () => {
-  const resplitMethods = useResplit();
-  const { getContainerProps, getSplitterProps, getPaneProps } = resplitMethods;
-
   return (
     <div className="flex-1 flex flex-col items-center justify-center">
-      <div {...getContainerProps()} className="max-w-[720px] w-full aspect-[3/2]">
-        <div {...getPaneProps(0, { initialSize: '0.5fr' })} className={PANE_CLASSES}>
+      <Resplit.Root className="max-w-[720px] w-full aspect-[3/2]">
+        <Resplit.Pane order={0} initialSize="0.5fr" className={PANE_CLASSES}>
           <img src={IMG_URL} alt="Sunflowers" className={[IMG_CLASSES, 'object-left'].join(' ')} />
-        </div>
-        <div {...getSplitterProps(1, { size: '4px' })} className="relative w-full h-full bg-zinc-900">
+        </Resplit.Pane>
+        <Resplit.Splitter order={1} size="4px" className="relative w-full h-full bg-zinc-900">
           <div className="absolute z-10 top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 flex items-center justify-center w-12 h-12 bg-zinc-900 rounded-full">
             <ChevronLeft />
             <ChevronRight />
           </div>
-        </div>
-        <div {...getPaneProps(2, { initialSize: '0.5fr' })} className={PANE_CLASSES}>
+        </Resplit.Splitter>
+        <Resplit.Pane order={2} initialSize="0.5fr" className={PANE_CLASSES}>
           <img
             src={IMG_URL}
             alt="Sunflowers with grayscale filter applied"
             className={[IMG_CLASSES, 'object-right grayscale'].join(' ')}
           />
-        </div>
-      </div>
+        </Resplit.Pane>
+      </Resplit.Root>
     </div>
   );
 };

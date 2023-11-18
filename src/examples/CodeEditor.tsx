@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useResplit } from 'resplit';
+import { Resplit, useResplitContext } from 'resplit';
 import {
   SandpackProvider,
   SandpackCodeEditor,
@@ -73,9 +73,8 @@ const PaneHeader = ({ children, id }: { children: React.ReactNode; id?: string }
   </h3>
 );
 
-const PreviewPane = () => {
-  const resplitMethods = useResplit({ direction: 'vertical' });
-  const { getContainerProps, getSplitterProps, getPaneProps, setPaneSizes, getPaneCollapsed } = resplitMethods;
+const ProblemsPane = () => {
+  const { getPaneCollapsed, setPaneSizes } = useResplitContext();
   const [tab, setTab] = React.useState<'console' | 'problems'>('console');
   const [collapsed, setCollapsed] = useState(false);
 
@@ -88,13 +87,8 @@ const PreviewPane = () => {
   };
 
   return (
-    <div className="h-full" {...getContainerProps()}>
-      <div {...getPaneProps(0, { initialSize: '0.7fr' })} className="relative flex flex-col bg-zinc-800">
-        <PaneHeader>Preview</PaneHeader>
-        <SandpackPreview className="flex-1" />
-      </div>
-
-      <div {...getSplitterProps(1, { size: '48px' })}>
+    <>
+      <Resplit.Splitter order={1} size="48px">
         <PaneHeader>
           <button
             className={tab === 'console' ? 'underline' : ''}
@@ -122,7 +116,13 @@ const PreviewPane = () => {
               setCollapsed(!collapsed);
             }}
           >
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 15 15"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path
                 d="M3.13523 6.15803C3.3241 5.95657 3.64052 5.94637 3.84197 6.13523L7.5 9.56464L11.158 6.13523C11.3595 5.94637 11.6759 5.95657 11.8648 6.15803C12.0536 6.35949 12.0434 6.67591 11.842 6.86477L7.84197 10.6148C7.64964 10.7951 7.35036 10.7951 7.15803 10.6148L3.15803 6.86477C2.95657 6.67591 2.94637 6.35949 3.13523 6.15803Z"
                 fill="currentColor"
@@ -130,25 +130,34 @@ const PreviewPane = () => {
             </svg>
           </button>
         </PaneHeader>
-      </div>
+      </Resplit.Splitter>
 
-      <div
-        {...getPaneProps(2, {
-          initialSize: '0.3fr',
-          onResize: handleResize,
-        })}
+      <Resplit.Pane
+        order={2}
+        initialSize="0.3fr"
+        onResize={handleResize}
         className="relative z-10 flex flex-col bg-zinc-800"
       >
         <SandpackConsole showHeader={false} className="flex-1 overflow-auto px-2" />
-      </div>
-    </div>
+      </Resplit.Pane>
+    </>
+  );
+};
+
+const PreviewPane = () => {
+  return (
+    <Resplit.Root direction="vertical" className="h-full">
+      <Resplit.Pane order={0} initialSize="0.7fr" className="relative flex flex-col bg-zinc-800">
+        <PaneHeader>Preview</PaneHeader>
+        <SandpackPreview className="flex-1" />
+      </Resplit.Pane>
+
+      <ProblemsPane />
+    </Resplit.Root>
   );
 };
 
 export const CodeEditorExample = () => {
-  const resplitMethods = useResplit({ direction: 'horizontal' });
-  const { getContainerProps, getSplitterProps, getPaneProps } = resplitMethods;
-
   return (
     <SandpackProvider
       template="react-ts"
@@ -171,7 +180,12 @@ export const CodeEditorExample = () => {
       <div className="flex flex-1 overflow-hidden">
         <div className="bg-zinc-800 border-r border-zinc-600">
           <button className="p-3 border-0 border-l-2 border-l-blue-500">
-            <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
+            <svg
+              viewBox="0 0 15 15"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-6 h-6"
+            >
               <path
                 d="M3.5 2C3.22386 2 3 2.22386 3 2.5V12.5C3 12.7761 3.22386 13 3.5 13H11.5C11.7761 13 12 12.7761 12 12.5V6H8.5C8.22386 6 8 5.77614 8 5.5V2H3.5ZM9 2.70711L11.2929 5H9V2.70711ZM2 2.5C2 1.67157 2.67157 1 3.5 1H8.5C8.63261 1 8.75979 1.05268 8.85355 1.14645L12.8536 5.14645C12.9473 5.24021 13 5.36739 13 5.5V12.5C13 13.3284 12.3284 14 11.5 14H3.5C2.67157 14 2 13.3284 2 12.5V2.5Z"
                 fill="currentColor"
@@ -179,34 +193,38 @@ export const CodeEditorExample = () => {
             </svg>
           </button>
         </div>
-        <div {...getContainerProps()} className="flex-1 font-mono text-sm">
-          <div {...getPaneProps(0, { initialSize: '0.15fr', minSize: '0.1fr' })} className="bg-zinc-800">
+        <Resplit.Root className="flex-1 font-mono text-sm">
+          <Resplit.Pane order={0} initialSize="0.15fr" minSize="0.1fr" className="bg-zinc-800">
             <PaneHeader id="files-pane">Files</PaneHeader>
             <SandpackFileExplorer autoHiddenFiles className="py-0" />
-          </div>
-          <div
-            {...getSplitterProps(1, { size: '1px' })}
+          </Resplit.Pane>
+          <Resplit.Splitter
+            order={1}
+            size="1px"
             aria-labelledby="files-pane"
             className={[SPLITTER_CLASSES, HORIZONTAL_SPLITTER_CLASSES].join(' ')}
           />
-          <div
-            {...getPaneProps(2, { initialSize: '0.45fr', minSize: '0.1fr' })}
+          <Resplit.Pane
+            order={2}
+            initialSize="0.45fr"
+            minSize="0.1fr"
             className="flex flex-col bg-zinc-800 overflow-hidden"
           >
             <PaneHeader id="code-pane">Code</PaneHeader>
             <div className="flex-1 overflow-auto -mt-4 -ml-1 data-[resplit-resizing=true]:opacity-5">
               <SandpackCodeEditor showTabs={false} style={{ height: '100%' }} />
             </div>
-          </div>
-          <div
-            {...getSplitterProps(3, { size: '1px' })}
+          </Resplit.Pane>
+          <Resplit.Splitter
+            order={3}
+            size="1px"
             aria-labelledby="code-pane"
             className={[SPLITTER_CLASSES, HORIZONTAL_SPLITTER_CLASSES].join(' ')}
           />
-          <div {...getPaneProps(4, { initialSize: '0.4fr', minSize: '0.1fr' })}>
+          <Resplit.Pane order={4} initialSize="0.4fr" minSize="0.1fr">
             <PreviewPane />
-          </div>
-        </div>
+          </Resplit.Pane>
+        </Resplit.Root>
       </div>
       <div className="bg-zinc-800 border-t border-zinc-600 text-white p-3">
         Demonstration of how an editor can be built with{' '}

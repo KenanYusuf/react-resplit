@@ -1,4 +1,4 @@
-import { ResplitOptions } from './types';
+import type { ResplitOptions } from './Root';
 
 export const DEFAULT_OPTIONS: ResplitOptions = {
   direction: 'horizontal',

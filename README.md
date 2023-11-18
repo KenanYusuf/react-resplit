@@ -2,7 +2,7 @@
 
 Resizable split pane layouts for React applications 🖖
 
-- Flexible hook-based API that works with any styling method
+- Compound component API that works with any styling method
 - Built with modern CSS, a grid-based layout and custom properties
 - Works with any amount of panes in a vertical or horizontal layout
 - Built following the [Window Splitter](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/) pattern for accessibility and keyboard controls
@@ -30,34 +30,36 @@ Install the package using your package manager of choice.
 npm install react-resplit
 ```
 
-Import the `useResplit` hook and register the container, panes and splitters.
+Import `Resplit` from `react-resplit` and render the Root, Pane(s) and Splitter(s).
 
 ```tsx
-import { useResplit } from 'react-resplit';
+import { Resplit } from 'react-resplit';
 
 function App() {
-  const { getContainerProps, getSplitterProps, getPaneProps } = useResplit({ direction: 'horizontal' });
-
   return (
-    <div {...getContainerProps()}>
-      <div {...getPaneProps(0, { initialSize: '0.5fr' })}>Pane 1</div>
-      <div {...getSplitterProps(1, { size: '10px' })} />
-      <div {...getPaneProps(2, { initialSize: '0.5fr' })}>Pane 2</div>
-    </div>
+    <Resplit.Root direction="horizontal">
+      <Resplit.Pane order={0} initialSize="0.5fr">
+        Pane 1
+      </Resplit.Pane>
+      <Resplit.Splitter order={1} size="10px" />
+      <Resplit.Pane order={2} initialSize="0.5fr">
+        Pane 2
+      </Resplit.Pane>
+    </Resplit.Root>
   );
 }
 ```
 
 ### Styling
 
-The container, splitter and pane elements are all unstyled by default apart from a few styles that are necessary for the layout - this is intentional so that the library remains flexible.
+The Root, Splitter and Pane elements are all unstyled by default apart from a few styles that are necessary for the layout - this is intentional so that the library remains flexible.
 
 Resplit will apply the correct cursor based on the `direction` provided to the hook.
 
-As a basic example, you could provide a `className` prop to the splitter elements and style them as a solid 10px divider.
+As a basic example, you could provide a `className` prop to the Splitter elements and style them as a solid 10px divider.
 
 ```tsx
-<div className="splitter" {...getSplitterProps(1, { size: '10px' })} />
+<Resplit.Splitter className="splitter" order={0} size="10px" />
 ```
 
 ```css
@@ -77,129 +79,66 @@ In addition to built-in accessibility considerations, you should also ensure tha
 If the primary pane has a visible label, the `aria-labelledby` attribute can be used.
 
 ```tsx
-<div {...getPaneProps(0)}>
+<Resplit.Pane order={0}>
   <h2 id="pane-1-label">Pane 1</h2>
-</div>
-<div aria-labelledby="pane-1-label" {...getSplitterProps(1)} />
+</Resplit.Pane>
+<Resplit.Splitter order={1} aria-labelledby="pane-1-label" />
 ```
 
-Alternatively, if the pane does not have a visible label, the `aria-label` attribute can be used.
+Alternatively, if the pane does not have a visible label, the `aria-label` attribute can be used on the Splitter instead.
 
 ```tsx
-<div aria-label="Pane 1" {...getSplitterProps(1)} />
+<Resplit.Splitter order={1} aria-label="Pane 1" />
 ```
 
 ## API
 
-### useResplit `(options: ResplitOptions) => ResplitMethods`
+All of the resplit components extend the `React.HTMLAttributes<HTMLDivElement>` interface, so you can pass any valid HTML attribute to them.
 
-The `useResplit` hook is how resizable layouts are initialised, configured with an options object as the first argument.
+### Root `(ResplitRootProps)`
 
-#### ResplitOptions `object`
+The root component of a resplit layout. Provides context to all child components.
 
-Configure how the resizable layout should function, e.g. the direction that the panes flow in.
-
-| Name        | Type                         | Default        | Description            |
+| Prop        | Type                         | Default        | Description            |
 | ----------- | ---------------------------- | -------------- | ---------------------- |
 | `direction` | `"horizontal" \| "vertical"` | `"horizontal"` | Direction of the panes |
+| `children`  | `ReactNode`                  |                | Child elements         |
+| `className` | `string`                     |                | Class name             |
+| `style`     | `CSSProperties`              |                | Style object           |
 
-#### ResplitMethods `object`
+### Pane `(ResplitPaneProps)`
 
-The `useResplit` hook returns the methods needed to register the container, panes and splitters. Each method returns an object of properties that should be spread to the relevant element.
+A pane is a container that can be resized.
 
-| Name                | Type                                                          |
-| ------------------- | ------------------------------------------------------------- |
-| `getContainerProps` | `() => ContainerProps`                                        |
-| `getPaneProps`      | `(order: number, options?: PaneOptions) => PaneProps`         |
-| `getSplitterProps`  | `(order: number, options?: SplitterOptions) => SplitterProps` |
-| `getHandleProps`    | `(order: number) => HandleProps`                              |
-| `setPaneSize`       | `(paneSizes: FrValue[]) => void`                              |
-| `getPaneCollapsed`  | `(order: number) => boolean`                                  |
-
-### getContainerProps `() => ContainerProps`
-
-Returns the ref and styles needed on the container element.
-
-#### ContainerProps `object`
-
-Properties needed for the container element.
-
-| Name    | Type                                           | Description                            |
-| ------- | ---------------------------------------------- | -------------------------------------- |
-| `ref`   | `React.LegacyRef<HTMLDivElement> \| undefined` | Ref for the container element          |
-| `style` | `React.CSSProperties`                          | Style object for the container element |
-
-### getPaneProps `(order: number, options?: PaneOptions) => PaneProps`
-
-Given an order as the first argument, returns the props for the pane element.
-
-#### PaneOptions `object`
-
-An optional second argument, used to configure the initial size of the pane as well the minimum size.
-
-| Name            | Type                           | Default                               | Description                                                               |
+| Prop            | Type                           | Default                               | Description                                                               |
 | --------------- | ------------------------------ | ------------------------------------- | ------------------------------------------------------------------------- |
 | `initialSize`   | `${number}fr`                  | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr)                |
 | `minSize`       | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the minimum size of the pane as a fractional (fr) or pixel (px) unit  |
 | `onResizeStart` | `() => void`                   |                                       | Callback function that is called when the pane starts being resized.      |
 | `onResize`      | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized. |
 | `onResizeEnd`   | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized. |
+| `children`      | `ReactNode`                    |                                       | Child elements                                                            |
+| `className`     | `string`                       |                                       | Class name                                                                |
+| `style`         | `CSSProperties`                |                                       | Style object                                                              |
 
-#### PaneProps `object`
+### Splitter `(ResplitSplitterProps)`
 
-Properties needed for the pane element.
+A splitter is a draggable element that can be used to resize panes.
 
-| Name                     | Type      | Description                                                                    |
-| ------------------------ | --------- | ------------------------------------------------------------------------------ |
-| `id`                     | `string`  | A random ID, referenced by the associated splitter's `aria-controls` attribute |
-| `data-resplit-order`     | `number`  | Data attribute set to the order of the pane                                    |
-| `data-resplit-collapsed` | `boolean` | Data attribute marking if the pane is collapsed or not                         |
+| Name        | Type            | Default  | Description                                  |
+| ----------- | --------------- | -------- | -------------------------------------------- |
+| `size`      | `${number}px`   | `"10px"` | Set the size of the splitter as a pixel unit |
+| `children`  | `ReactNode`     |          | Child elements                               |
+| `className` | `string`        |          | Class name                                   |
+| `style`     | `CSSProperties` |          | Style object                                 |
 
-### getSplitterProps `(order: number, options?: SplitterOptions) => SplitterProps`
+### useResplitContext `() => ResplitContextValue`
 
-Given an order as the first argument, returns the props for the splitter element.
+The `useResplitContext` hook provides access to the context of the nearest `Resplit.Root` component.
 
-#### SplitterOptions `object`
+See the methods below for more information on what is available.
 
-An optional second argument, used to configure the size of the splitter element
-
-| Name   | Type          | Default  | Description                                  |
-| ------ | ------------- | -------- | -------------------------------------------- |
-| `size` | `${number}px` | `"10px"` | Set the size of the splitter as a pixel unit |
-
-#### SplitterProps `object`
-
-Properties needed for the splitter element.
-
-| Name                  | Type                                                   | Description                                                                         |
-| --------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| `role`                | `"separator"`                                          | Role attribute for the splitter element                                             |
-| `tabIndex`            | `0`                                                    | Makes the splitter element selectable via the tab key                               |
-| `aria-orientation`    | `"horizontal" \| "vertical"`                           | Informs screen readers of the resize orientation                                    |
-| `aria-valuemin`       | `number`                                               | A decimal value representing the minimum size of the pane that the splitter resizes |
-| `aria-valuemax`       | `number`                                               | A decimal value representing the maximum size of the pane that the splitter resizes |
-| `aria-valuenow`       | `number`                                               | A decimal value representing the current size of the pane that the splitter resizes |
-| `aria-controls`       | `string`                                               | Informs screen readers which pane element the splitter controls                     |
-| `data-resplit-order`  | `number`                                               | Data attribute set to the order of the splitter                                     |
-| `data-resplit-active` | `boolean`                                              | Data attribute marking if splitter is being dragged or not                          |
-| `style`               | `React.CSSProperties`                                  | Style object for the splitter element                                               |
-| `onMouseDown`         | `() => void`                                           | Mousedown event handler                                                             |
-| `onKeyDown`           | `(event: React.KeyboardEvent<HTMLDivElement>) => void` | Keydown event handler                                                               |
-
-### getHandleProps `(order: number) => HandleProps`
-
-Given an order as the first argument, returns the props for the handle element. The order should be the same as the associated splitter.
-
-#### HandleProps `object`
-
-Properties needed for the handle element.
-
-| Name          | Type                  | Description                         |
-| ------------- | --------------------- | ----------------------------------- |
-| `style`       | `React.CSSProperties` | Style object for the handle element |
-| `onMouseDown` | `() => void`          | Mousedown event handler             |
-
-### setPaneSize `(paneSizes: FrValue[]) => void`
+#### setPaneSize `(paneSizes: FrValue[]) => void`
 
 Get the collapsed state of a pane.
 
@@ -209,32 +148,36 @@ Specify the size of each pane as a fractional unit (fr). The number of values sh
 setPaneSize(['0.6fr', '0.4fr']);
 ```
 
-### getPaneCollapsed `(order: number) => boolean`
+#### getPaneCollapsed `(order: number) => boolean`
 
 Get the collapsed state of a pane.
 
 **Note**: The returned value will not update on every render and should be used in a callback e.g. used in combination with a pane's `onResize` callback.
 
 ```tsx
-import { useResplit } from 'react-resplit';
+import { Resplit, useResplitContext } from 'react-resplit';
 
 function App() {
-  const { getContainerProps, getSplitterProps, getPaneProps, getPaneCollapsed } = useResplit({
+  const { getPaneCollapsed } = useResplitContext({
     direction: 'horizontal',
   });
 
   const handleResize = () => {
-    if (isPaneCollapsed(2)) {
+    if (getPaneCollapsed(2)) {
       // Do something
     }
   };
 
   return (
-    <div {...getContainerProps()}>
-      <div {...getPaneProps(0, { initialSize: '0.5fr' })}>Pane 1</div>
-      <div {...getSplitterProps(1, { size: '10px' })} />
-      <div {...getPaneProps(2, { initialSize: '0.5fr', onResize: handleResize })}>Pane 2</div>
-    </div>
+    <Resplit.Root>
+      <Resplit.Pane order={0} initialSize="0.5fr">
+        Pane 1
+      </Resplit.Pane>
+      <Resplit.Splitter order={1} size="10px" />
+      <Resplit.Pane order={2} initialSize="0.5fr" onResize={handleResize}>
+        Pane 2
+      </Resplit.Pane>
+    </Resplit.Root>
   );
 }
 ```

@@ -1,54 +1,98 @@
-import { ReactNode, useCallback, useId, useRef, useState } from 'react';
+import { HTMLAttributes, ReactNode, forwardRef, useId, useRef, useState } from 'react';
+
+import { ResplitContext } from './ResplitContext';
+import { RootContext } from './RootContext';
+import { CURSOR_BY_DIRECTION, GRID_TEMPLATE_BY_DIRECTION } from './const';
 import {
-  CURSOR_BY_DIRECTION,
-  SPLITTER_DEFAULT_SIZE,
-  GRID_TEMPLATE_BY_DIRECTION,
-  PANE_DEFAULT_MIN_SIZE,
-  DEFAULT_OPTIONS,
-} from './const';
-import { ResplitOptions, ResplitMethods, ChildrenState, PaneChild, Order, FrValue, PxValue } from './types';
-import { convertFrToNumber, convertPxToFr, convertPxToNumber, isPx, useIsomorphicLayoutEffect } from './utils';
+  convertFrToNumber,
+  convertPxToFr,
+  convertPxToNumber,
+  isPx,
+  mergeRefs,
+  useIsomorphicLayoutEffect,
+} from './utils';
+
+import type { FrValue, Order, PxValue, Direction } from './types';
+import type { ResplitPaneOptions } from './Pane';
+import type { ResplitSplitterOptions } from './Splitter';
 
 /**
- * The `useResplit` hook is how resizable layouts are initialised.
+ * The state of an individual pane.
  *
- * @param resplitOptions - {@link ResplitOptions}
+ * @internal For internal use only.
  *
- * @returns Methods needed to register the container, panes and splitters. {@link ResplitMethods}
+ * @see {@link PaneOptions} for the public API.
+ */
+export interface PaneChild extends ResplitPaneOptions {
+  type: 'pane';
+  minSize: PxValue | FrValue;
+}
+
+/**
+ * The state of an individual splitter.
+ *
+ * @internal For internal use only.
+ *
+ * @see {@link SplitterOptions} for the public API.
+ */
+export interface SplitterChild extends ResplitSplitterOptions {
+  type: 'splitter';
+  size: PxValue;
+}
+
+/**
+ * An object containing panes and splitters. Indexed by order.
+ *
+ * @internal For internal use only.
+ */
+export interface ChildrenState {
+  [order: Order]: PaneChild | SplitterChild;
+}
+
+export interface ResplitOptions {
+  /**
+   * Direction of the panes.
+   *
+   * @defaultValue 'horizontal'
+   *
+   */
+  direction?: Direction;
+}
+
+export type ResplitRootProps = ResplitOptions &
+  HTMLAttributes<HTMLDivElement> & {
+    /**
+     * The children of the ResplitRoot component.
+     */
+    children: ReactNode;
+  };
+
+/**
+ * The root component of a resplit layout. Provides context to all child components.
  *
  * @example
  * ```tsx
- * import { useResplit } from 'react-resplit';
- *
- * function App() {
- *   const {
- *     getContainerProps,
- *     getSplitterProps,
- *     getPaneProps
- *   } = useResplit({ direction: 'horizontal' });
- *
- *   return (
- *     <div {...getContainerProps()}>
- *       <div {...getPaneProps(0, { initialSize: '0.5fr' })}>Pane 1</div>
- *       <div {...getSplitterProps(1, { size: '10px' })} />
- *       <div {...getPaneProps(2, { initialSize: '0.5fr' })}>Pane 2</div>
- *     </div>
- *   );
- * };
+ * <ResplitRoot direction="horizontal">
+ *   <ResplitPane order={0} />
+ *   <ResplitSplitter order={1} />
+ *   <ResplitPane order={2} />
+ * </ResplitRoot>
  * ```
  */
-export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
-  const options: ResplitOptions = { ...DEFAULT_OPTIONS, ...resplitOptions };
-  const { direction } = options;
-  const [children, setChildren] = useState<ChildrenState>({});
-  const containerRef = useRef<HTMLDivElement>();
-  const activeSplitterOrder = useRef<number | null>(null);
+export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function Root(
+  { direction = 'horizontal', children: reactChildren, style, ...rest },
+  forwardedRef,
+) {
   const id = useId();
+  const activeSplitterOrder = useRef<number | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [children, setChildren] = useState<ChildrenState>({});
 
   const getChildElement = (order: Order) =>
-    containerRef.current?.querySelector(`:scope > [data-resplit-order="${order}"]`);
+    rootRef.current?.querySelector(`:scope > [data-resplit-order="${order}"]`);
 
-  const getChildSize = (order: Order) => containerRef.current?.style.getPropertyValue(`--resplit-${order}`);
+  const getChildSize = (order: Order) =>
+    rootRef.current?.style.getPropertyValue(`--resplit-${order}`);
 
   const getChildSizeAsNumber = (order: Order) => {
     const childSize = getChildSize(order);
@@ -59,22 +103,27 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
   };
 
   const setChildSize = (order: Order, size: FrValue | PxValue) => {
-    containerRef.current?.style.setProperty(`--resplit-${order}`, size);
+    rootRef.current?.style.setProperty(`--resplit-${order}`, size);
     const child = children[order];
 
     if (child.type === 'pane') {
       const paneSplitter = getChildElement(order + 1);
-      paneSplitter?.setAttribute('aria-valuenow', String(convertFrToNumber(size as FrValue).toFixed(2)));
+      paneSplitter?.setAttribute(
+        'aria-valuenow',
+        String(convertFrToNumber(size as FrValue).toFixed(2)),
+      );
     }
   };
 
-  const getPaneCollapsed = (order: Order) => getChildElement(order)?.getAttribute('data-resplit-collapsed') === 'true';
+  const getPaneCollapsed = (order: Order) =>
+    getChildElement(order)?.getAttribute('data-resplit-collapsed') === 'true';
 
   const setPaneCollapsed = (order: Order, isCollapsed: boolean) =>
     getChildElement(order)?.setAttribute('data-resplit-collapsed', String(isCollapsed));
 
-  const getContainerSize = () =>
-    (direction === 'horizontal' ? containerRef.current?.offsetWidth : containerRef.current?.offsetHeight) || 0;
+  const getRootSize = () =>
+    (direction === 'horizontal' ? rootRef.current?.offsetWidth : rootRef.current?.offsetHeight) ||
+    0;
 
   const resizeByDelta = (splitterOrder: Order, delta: number) => {
     const isGrowing = delta > 0;
@@ -119,17 +168,21 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     // Return if no panes are resizable
     if (!prevPane || !nextPane) return;
 
-    const containerSize = getContainerSize();
+    const rootSize = getRootSize();
 
     let prevPaneSize = getChildSizeAsNumber(prevPaneIndex) + delta;
     const prevPaneMinSize = convertFrToNumber(
-      isPx(prevPane.minSize) ? convertPxToFr(convertPxToNumber(prevPane.minSize), containerSize) : prevPane.minSize,
+      isPx(prevPane.minSize)
+        ? convertPxToFr(convertPxToNumber(prevPane.minSize), rootSize)
+        : prevPane.minSize,
     );
     const prevPaneIsCollapsed = prevPaneSize <= prevPaneMinSize;
 
     let nextPaneSize = getChildSizeAsNumber(nextPaneIndex) - delta;
     const nextPaneMinSize = convertFrToNumber(
-      isPx(nextPane.minSize) ? convertPxToFr(convertPxToNumber(nextPane.minSize), containerSize) : nextPane.minSize,
+      isPx(nextPane.minSize)
+        ? convertPxToFr(convertPxToNumber(nextPane.minSize), rootSize)
+        : nextPane.minSize,
     );
     const nextPaneIsCollapsed = nextPaneSize <= nextPaneMinSize;
 
@@ -169,15 +222,17 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
 
     // Calculate available space
     const combinedSplitterSize = Object.entries(children).reduce(
-      (total, [order, child]) => total + (child.type === 'splitter' ? getChildSizeAsNumber(Number(order)) : 0),
+      (total, [order, child]) =>
+        total + (child.type === 'splitter' ? getChildSizeAsNumber(Number(order)) : 0),
       0,
     );
 
-    const availableSpace = getContainerSize() - combinedSplitterSize;
+    const availableSpace = getRootSize() - combinedSplitterSize;
 
     // Calculate delta
     const splitterRect = splitter.getBoundingClientRect();
-    const movement = direction === 'horizontal' ? e.clientX - splitterRect.left : e.clientY - splitterRect.top;
+    const movement =
+      direction === 'horizontal' ? e.clientX - splitterRect.left : e.clientY - splitterRect.top;
     const delta = movement / availableSpace;
 
     // Return if no change in the direction of movement
@@ -196,7 +251,7 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     if (order === null) return;
 
     // Set data attributes
-    containerRef.current?.setAttribute('data-resplit-resizing', 'false');
+    rootRef.current?.setAttribute('data-resplit-resizing', 'false');
 
     if (order !== null) {
       getChildElement(order)?.setAttribute('data-resplit-active', 'false');
@@ -226,12 +281,12 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
    * - Fire when user begins interacting with splitter
    * - Handle resizing of panes using cursor
    */
-  const handleMouseDown = (order: number) => () => {
+  const handleSplitterMouseDown = (order: number) => () => {
     // Set active splitter
     activeSplitterOrder.current = order;
 
     // Set data attributes
-    containerRef.current?.setAttribute('data-resplit-resizing', 'true');
+    rootRef.current?.setAttribute('data-resplit-resizing', 'true');
 
     if (activeSplitterOrder.current !== null) {
       getChildElement(activeSplitterOrder.current)?.setAttribute('data-resplit-active', 'true');
@@ -259,26 +314,58 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
    * - Handle resizing of panes using keyboard
    * - Refer to: https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/
    */
-  const handleKeyDown = (splitterOrder: number) => (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const isHorizontal = direction === 'horizontal';
-    const isVertical = direction === 'vertical';
+  const handleSplitterKeyDown =
+    (splitterOrder: number) => (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const isHorizontal = direction === 'horizontal';
+      const isVertical = direction === 'vertical';
 
-    if ((e.key === 'ArrowLeft' && isHorizontal) || (e.key === 'ArrowUp' && isVertical)) {
-      resizeByDelta(splitterOrder, -0.01);
-    } else if ((e.key === 'ArrowRight' && isHorizontal) || (e.key === 'ArrowDown' && isVertical)) {
-      resizeByDelta(splitterOrder, 0.01);
-    } else if (e.key === 'Home') {
-      resizeByDelta(splitterOrder, -1);
-    } else if (e.key === 'End') {
-      resizeByDelta(splitterOrder, 1);
-    } else if (e.key === 'Enter') {
-      if (getPaneCollapsed(splitterOrder - 1)) {
-        const initialSize = (children[splitterOrder - 1] as PaneChild).initialSize || '1fr';
-        resizeByDelta(splitterOrder, convertFrToNumber(initialSize));
-      } else {
+      if ((e.key === 'ArrowLeft' && isHorizontal) || (e.key === 'ArrowUp' && isVertical)) {
+        resizeByDelta(splitterOrder, -0.01);
+      } else if (
+        (e.key === 'ArrowRight' && isHorizontal) ||
+        (e.key === 'ArrowDown' && isVertical)
+      ) {
+        resizeByDelta(splitterOrder, 0.01);
+      } else if (e.key === 'Home') {
         resizeByDelta(splitterOrder, -1);
+      } else if (e.key === 'End') {
+        resizeByDelta(splitterOrder, 1);
+      } else if (e.key === 'Enter') {
+        if (getPaneCollapsed(splitterOrder - 1)) {
+          const initialSize = (children[splitterOrder - 1] as PaneChild).initialSize || '1fr';
+          resizeByDelta(splitterOrder, convertFrToNumber(initialSize));
+        } else {
+          resizeByDelta(splitterOrder, -1);
+        }
       }
-    }
+    };
+
+  const registerPane = (order: string, options: ResplitPaneOptions) => {
+    setChildren((children) => ({
+      ...children,
+      [order]: {
+        type: 'pane',
+        ...options,
+      },
+    }));
+  };
+
+  const registerSplitter = (order: string, options: ResplitSplitterOptions) => {
+    setChildren((children) => ({
+      ...children,
+      [order]: {
+        type: 'splitter',
+        ...options,
+      },
+    }));
+  };
+
+  const setPaneSizes = (paneSizes: FrValue[]) => {
+    paneSizes.forEach((paneSize, index) => {
+      const order = index * 2;
+      setChildSize(order, paneSize);
+      setPaneCollapsed(order, (children[order] as PaneChild).minSize === paneSize);
+    });
   };
 
   /**
@@ -294,7 +381,9 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
       const child = children[orderAsNumber];
 
       if (child.type === 'pane') {
-        const paneSize = getPaneCollapsed(orderAsNumber) ? '0fr' : child.initialSize || `${1 / paneCount}fr`;
+        const paneSize = getPaneCollapsed(orderAsNumber)
+          ? '0fr'
+          : child.initialSize || `${1 / paneCount}fr`;
         setChildSize(orderAsNumber, paneSize);
       } else {
         setChildSize(orderAsNumber, child.size);
@@ -303,89 +392,44 @@ export const useResplit = (resplitOptions?: ResplitOptions): ResplitMethods => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenLength]);
 
-  const registerChild = useCallback(
-    (order: number, value: ChildrenState[number]) => (node: ReactNode) => {
-      if (node !== null && !children[order]) {
-        setChildren((currentChildren) => ({
-          ...currentChildren,
-          [order]: value,
-        }));
-      }
-    },
-    [children],
+  return (
+    <RootContext.Provider
+      value={{
+        id,
+        direction,
+        registerPane,
+        registerSplitter,
+        handleSplitterMouseDown,
+        handleSplitterKeyDown,
+      }}
+    >
+      <ResplitContext.Provider
+        value={{
+          getPaneCollapsed,
+          setPaneSizes,
+        }}
+      >
+        <div
+          ref={mergeRefs([rootRef, forwardedRef])}
+          data-resplit-direction={direction}
+          data-resplit-resizing={false}
+          style={{
+            display: 'grid',
+            overflow: 'hidden',
+            [GRID_TEMPLATE_BY_DIRECTION[direction]]: Object.keys(children).reduce(
+              (value, order) => {
+                const childVar = `minmax(0, var(--resplit-${order}))`;
+                return value ? `${value} ${childVar}` : `${childVar}`;
+              },
+              '',
+            ),
+            ...style,
+          }}
+          {...rest}
+        >
+          {reactChildren}
+        </div>
+      </ResplitContext.Provider>
+    </RootContext.Provider>
   );
-
-  /**
-   * Public API
-   * - Everything below is returned by the hook
-   * - Each function returns a set of props to be spread onto the relevant element
-   * - Each function also registers the element with the hook
-   */
-  const getPaneProps: ResplitMethods['getPaneProps'] = (order, options = {}) => ({
-    'data-resplit-order': order,
-    'data-resplit-collapsed': false,
-    id: `resplit-${id}-${order}`,
-    ref: registerChild(order, {
-      type: 'pane',
-      minSize: options.minSize || PANE_DEFAULT_MIN_SIZE,
-    }),
-  });
-
-  const getSplitterProps: ResplitMethods['getSplitterProps'] = (order, options = {}) => ({
-    role: 'separator',
-    tabIndex: 0,
-    'aria-orientation': direction,
-    'aria-valuemin': 0,
-    'aria-valuemax': 1,
-    'aria-valuenow': 1,
-    'aria-controls': `resplit-${id}-${order - 1}`,
-    'data-resplit-order': order,
-    'data-resplit-active': false,
-    style: { cursor: CURSOR_BY_DIRECTION[direction] },
-    onMouseDown: handleMouseDown(order),
-    onKeyDown: handleKeyDown(order),
-    ref: registerChild(order, {
-      ...options,
-      type: 'splitter',
-      size: options.size || SPLITTER_DEFAULT_SIZE,
-    }),
-  });
-
-  const getHandleProps = (order: number) => ({
-    style: { cursor: CURSOR_BY_DIRECTION[direction] },
-    onMouseDown: handleMouseDown(order),
-  });
-
-  const getContainerProps: ResplitMethods['getContainerProps'] = () => ({
-    'data-resplit-direction': direction,
-    'data-resplit-resizing': false,
-    style: {
-      display: 'grid',
-      overflow: 'hidden',
-      [GRID_TEMPLATE_BY_DIRECTION[direction]]: Object.keys(children).reduce((value, order) => {
-        const childVar = `minmax(0, var(--resplit-${order}))`;
-        return value ? `${value} ${childVar}` : `${childVar}`;
-      }, ''),
-    },
-    ref: (element: HTMLDivElement) => {
-      containerRef.current = element;
-    },
-  });
-
-  const setPaneSizes = (paneSizes: FrValue[]) => {
-    paneSizes.forEach((paneSize, index) => {
-      const order = index * 2;
-      setChildSize(order, paneSize);
-      setPaneCollapsed(order, (children[order] as PaneChild).minSize === paneSize);
-    });
-  };
-
-  return {
-    getContainerProps,
-    getPaneProps,
-    getSplitterProps,
-    getHandleProps,
-    setPaneSizes,
-    getPaneCollapsed,
-  };
-};
+});
