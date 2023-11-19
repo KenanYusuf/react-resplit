@@ -1,4 +1,5 @@
 import { HTMLAttributes, ReactNode, forwardRef, useId, useRef, useState } from 'react';
+import { Slot } from '@radix-ui/react-slot';
 
 import { ResplitContext } from './ResplitContext';
 import { RootContext } from './RootContext';
@@ -65,6 +66,22 @@ export type ResplitRootProps = ResplitOptions &
      * The children of the ResplitRoot component.
      */
     children: ReactNode;
+    /**
+     * Merges props onto the immediate child.
+     *
+     * @defaultValue false
+     *
+     * @example
+     *
+     * ```tsx
+     * <ResplitRoot asChild>
+     *   <main style={{ backgroundColor: 'red' }}>
+     *     ...
+     *   </main>
+     * </ResplitRoot>
+     * ```
+     */
+    asChild?: boolean;
   };
 
 /**
@@ -80,10 +97,11 @@ export type ResplitRootProps = ResplitOptions &
  * ```
  */
 export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function Root(
-  { direction = 'horizontal', children: reactChildren, style, ...rest },
+  { direction = 'horizontal', children: reactChildren, style, asChild = false, ...rest },
   forwardedRef,
 ) {
   const id = useId();
+  const Comp = asChild ? Slot : 'div';
   const activeSplitterOrder = useRef<number | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const [children, setChildren] = useState<ChildrenState>({});
@@ -409,7 +427,7 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
           setPaneSizes,
         }}
       >
-        <div
+        <Comp
           ref={mergeRefs([rootRef, forwardedRef])}
           data-resplit-direction={direction}
           data-resplit-resizing={false}
@@ -428,7 +446,7 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
           {...rest}
         >
           {reactChildren}
-        </div>
+        </Comp>
       </ResplitContext.Provider>
     </RootContext.Provider>
   );

@@ -1,4 +1,5 @@
 import { ReactNode, HTMLAttributes, forwardRef } from 'react';
+import { Slot } from '@radix-ui/react-slot';
 
 import { useRootContext } from './RootContext';
 import { PANE_DEFAULT_MIN_SIZE } from './const';
@@ -51,6 +52,22 @@ export type ResplitPaneProps = HTMLAttributes<HTMLDivElement> &
      * The content of the pane.
      */
     children?: ReactNode;
+    /**
+     * Merges props onto the immediate child.
+     *
+     * @defaultValue false
+     *
+     * @example
+     *
+     * ```tsx
+     * <ResplitPane order={0} asChild>
+     *   <aside style={{ backgroundColor: 'red' }}>
+     *     ...
+     *   </aside>
+     * </ResplitPane>
+     * ```
+     */
+    asChild?: boolean;
   };
 
 /**
@@ -71,6 +88,7 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
     order,
     minSize = PANE_DEFAULT_MIN_SIZE,
     initialSize,
+    asChild = false,
     onResize,
     onResizeStart,
     onResizeEnd,
@@ -78,6 +96,7 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
   },
   ref,
 ) {
+  const Comp = asChild ? Slot : 'div';
   const { id, registerPane } = useRootContext();
 
   useIsomorphicLayoutEffect(() => {
@@ -91,7 +110,7 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
   }, []);
 
   return (
-    <div
+    <Comp
       id={`resplit-${id}-${order}`}
       data-resplit-order={order}
       data-resplit-collapsed={false}
@@ -99,6 +118,6 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
       {...rest}
     >
       {children}
-    </div>
+    </Comp>
   );
 });
