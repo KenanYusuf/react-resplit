@@ -1,4 +1,5 @@
 import { ReactNode, HTMLAttributes, forwardRef } from 'react';
+import { Slot } from '@radix-ui/react-slot';
 
 import { useRootContext } from './RootContext';
 import { CURSOR_BY_DIRECTION, SPLITTER_DEFAULT_SIZE } from './const';
@@ -27,6 +28,22 @@ export type ResplitSplitterProps = HTMLAttributes<HTMLDivElement> &
      * The content of the splitter.
      */
     children?: ReactNode;
+    /**
+     * Merges props onto the immediate child.
+     *
+     * @defaultValue false
+     *
+     * @example
+     *
+     * ```tsx
+     * <ResplitSplitter asChild>
+     *   <div style={{ backgroundColor: 'red' }}>
+     *     ...
+     *   </div>
+     * </ResplitSplitter>
+     * ```
+     */
+    asChild?: boolean;
   };
 
 /**
@@ -40,9 +57,10 @@ export type ResplitSplitterProps = HTMLAttributes<HTMLDivElement> &
  * ```
  */
 export const ResplitSplitter = forwardRef<HTMLDivElement, ResplitSplitterProps>(function Splitter(
-  { children, order, size = SPLITTER_DEFAULT_SIZE, ...rest },
+  { children, order, size = SPLITTER_DEFAULT_SIZE, asChild = false, ...rest },
   ref,
 ) {
+  const Comp = asChild ? Slot : 'div';
   const { id, direction, registerSplitter, handleSplitterMouseDown, handleSplitterKeyDown } =
     useRootContext();
 
@@ -52,7 +70,7 @@ export const ResplitSplitter = forwardRef<HTMLDivElement, ResplitSplitterProps>(
 
   return (
     // eslint-disable-next-line jsx-a11y/role-supports-aria-props, jsx-a11y/no-noninteractive-element-interactions
-    <div
+    <Comp
       role="separator"
       // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
       tabIndex={0}
@@ -70,6 +88,6 @@ export const ResplitSplitter = forwardRef<HTMLDivElement, ResplitSplitterProps>(
       {...rest}
     >
       {children}
-    </div>
+    </Comp>
   );
 });

@@ -7,8 +7,6 @@ Resizable split pane layouts for React applications 🖖
 - Works with any amount of panes in a vertical or horizontal layout
 - Built following the [Window Splitter](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/) pattern for accessibility and keyboard controls
 
-
-
 https://github.com/KenanYusuf/react-resplit/assets/9557798/d47ef278-bcb1-4c2b-99e6-7a9f99943f96
 
 _Example of a code editor built with `react-resplit`_
@@ -102,12 +100,13 @@ All of the resplit components extend the `React.HTMLAttributes<HTMLDivElement>` 
 
 The root component of a resplit layout. Provides context to all child components.
 
-| Prop        | Type                         | Default        | Description            |
-| ----------- | ---------------------------- | -------------- | ---------------------- |
-| `direction` | `"horizontal" \| "vertical"` | `"horizontal"` | Direction of the panes |
-| `children`  | `ReactNode`                  |                | Child elements         |
-| `className` | `string`                     |                | Class name             |
-| `style`     | `CSSProperties`              |                | Style object           |
+| Prop        | Type                         | Default        | Description                           |
+| ----------- | ---------------------------- | -------------- | ------------------------------------- |
+| `direction` | `"horizontal" \| "vertical"` | `"horizontal"` | Direction of the panes                |
+| `asChild`   | `boolean`                    | `false`        | Merges props onto the immediate child |
+| `children`  | `ReactNode`                  |                | Child elements                        |
+| `className` | `string`                     |                | Class name                            |
+| `style`     | `CSSProperties`              |                | Style object                          |
 
 ### Pane `(ResplitPaneProps)`
 
@@ -120,6 +119,7 @@ A pane is a container that can be resized.
 | `onResizeStart` | `() => void`                   |                                       | Callback function that is called when the pane starts being resized.      |
 | `onResize`      | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized. |
 | `onResizeEnd`   | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized. |
+| `asChild`       | `boolean`                      | `false`                               | Merges props onto the immediate child                                     |
 | `children`      | `ReactNode`                    |                                       | Child elements                                                            |
 | `className`     | `string`                       |                                       | Class name                                                                |
 | `style`         | `CSSProperties`                |                                       | Style object                                                              |
@@ -131,6 +131,7 @@ A splitter is a draggable element that can be used to resize panes.
 | Name        | Type            | Default  | Description                                  |
 | ----------- | --------------- | -------- | -------------------------------------------- |
 | `size`      | `${number}px`   | `"10px"` | Set the size of the splitter as a pixel unit |
+| `asChild`   | `boolean`       | `false`  | Merges props onto the immediate child        |
 | `children`  | `ReactNode`     |          | Child elements                               |
 | `className` | `string`        |          | Class name                                   |
 | `style`     | `CSSProperties` |          | Style object                                 |
