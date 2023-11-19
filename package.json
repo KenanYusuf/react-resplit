@@ -20,7 +20,7 @@
   },
   "license": "MIT",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "./dist/resplit.umd.cjs",
   "module": "./dist/resplit.es.js",
   "types": "./dist/resplit.d.ts",
