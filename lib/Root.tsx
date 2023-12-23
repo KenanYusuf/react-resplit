@@ -8,6 +8,7 @@ import {
   convertFrToNumber,
   convertPxToFr,
   convertPxToNumber,
+  convertSizeToFr,
   isPx,
   mergeRefs,
   useIsomorphicLayoutEffect,
@@ -149,53 +150,41 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
     (direction === 'horizontal' ? rootRef.current?.offsetWidth : rootRef.current?.offsetHeight) ||
     0;
 
+  const findResizablePane = (start: number, direction: number) => {
+    let index = start;
+    let pane: PaneChild | null = children[index] as PaneChild;
+
+    while (index >= 0 && index < Object.values(children).length) {
+      const child = children[index];
+
+      if (
+        child.type === 'splitter' ||
+        (isMinSize(index) && !child.collapsible) ||
+        (isMinSize(index) && child.collapsible && isCollapsed(index))
+      ) {
+        index += direction;
+        pane = null;
+      } else {
+        pane = child;
+        break;
+      }
+    }
+
+    return { index, pane };
+  };
+
   const resizeByDelta = (splitterOrder: Order, delta: number) => {
     const isGrowing = delta > 0;
     const isShrinking = delta < 0;
 
-    // Get the previous resizable pane (to left or above)
-    let prevPaneIndex = splitterOrder - 1;
-    let prevPane: PaneChild | null = children[prevPaneIndex] as PaneChild;
+    // Find the previous and next resizable panes
+    const { index: prevPaneIndex, pane: prevPane } = isShrinking
+      ? findResizablePane(splitterOrder - 1, -1)
+      : { index: splitterOrder - 1, pane: children[splitterOrder - 1] as PaneChild };
 
-    if (isShrinking) {
-      while (prevPaneIndex >= 0) {
-        const pane = children[prevPaneIndex];
-
-        if (
-          pane.type === 'splitter' ||
-          (isMinSize(prevPaneIndex) && !pane.collapsible) ||
-          (isMinSize(prevPaneIndex) && pane.collapsible && isCollapsed(prevPaneIndex))
-        ) {
-          prevPaneIndex--;
-          prevPane = null;
-        } else {
-          prevPane = pane;
-          break;
-        }
-      }
-    }
-
-    // Get the next resizable pane (to right or below)
-    let nextPaneIndex = splitterOrder + 1;
-    let nextPane: PaneChild | null = children[nextPaneIndex] as PaneChild;
-
-    if (isGrowing) {
-      while (nextPaneIndex < Object.values(children).length) {
-        const pane = children[nextPaneIndex];
-
-        if (
-          pane.type === 'splitter' ||
-          (isMinSize(nextPaneIndex) && !pane.collapsible) ||
-          (isMinSize(nextPaneIndex) && pane.collapsible && isCollapsed(nextPaneIndex))
-        ) {
-          nextPaneIndex++;
-          nextPane = null;
-        } else {
-          nextPane = pane;
-          break;
-        }
-      }
-    }
+    const { index: nextPaneIndex, pane: nextPane } = isGrowing
+      ? findResizablePane(splitterOrder + 1, 1)
+      : { index: splitterOrder + 1, pane: children[splitterOrder + 1] as PaneChild };
 
     // Return if no panes are resizable
     if (!prevPane || !nextPane) return;
@@ -203,20 +192,12 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
     const rootSize = getRootSize();
 
     let prevPaneSize = getChildSizeAsNumber(prevPaneIndex) + delta;
-    const prevPaneMinSize = convertFrToNumber(
-      isPx(prevPane.minSize)
-        ? convertPxToFr(convertPxToNumber(prevPane.minSize), rootSize)
-        : prevPane.minSize,
-    );
+    const prevPaneMinSize = convertFrToNumber(convertSizeToFr(prevPane.minSize, rootSize));
     const prevPaneIsMinSize = prevPaneSize <= prevPaneMinSize;
     const prevPaneIsCollapsed = prevPaneSize <= prevPaneMinSize / 2;
 
     let nextPaneSize = getChildSizeAsNumber(nextPaneIndex) - delta;
-    const nextPaneMinSize = convertFrToNumber(
-      isPx(nextPane.minSize)
-        ? convertPxToFr(convertPxToNumber(nextPane.minSize), rootSize)
-        : nextPane.minSize,
-    );
+    const nextPaneMinSize = convertFrToNumber(convertSizeToFr(nextPane.minSize, rootSize));
     const nextPaneIsMinSize = nextPaneSize <= nextPaneMinSize;
     const nextPaneIsCollapsed = nextPaneSize <= nextPaneMinSize / 2;
 

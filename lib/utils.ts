@@ -5,11 +5,13 @@ export const convertFrToNumber = (val: FrValue) => Number(val.replace('fr', ''))
 
 export const convertPxToNumber = (val: PxValue) => Number(val.replace('px', ''));
 
-export const convertPxToFr = (px: number, containerSize: number): FrValue => {
-  return `${px / containerSize}fr`;
-};
+export const convertPxToFr = (px: number, containerSize: number): FrValue =>
+  `${px / containerSize}fr`;
 
 export const isPx = (val: FrValue | PxValue): val is PxValue => val.includes('px');
+
+export const convertSizeToFr = (size: FrValue | PxValue, rootSize: number) =>
+  isPx(size) ? convertPxToFr(convertPxToNumber(size), rootSize) : size;
 
 export const useIsomorphicLayoutEffect =
   typeof window === 'undefined' ? useEffect : useLayoutEffect;
