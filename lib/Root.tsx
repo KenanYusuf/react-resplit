@@ -194,12 +194,12 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
     let prevPaneSize = getChildSizeAsNumber(prevPaneIndex) + delta;
     const prevPaneMinSize = convertFrToNumber(convertSizeToFr(prevPane.minSize, rootSize));
     const prevPaneIsMinSize = prevPaneSize <= prevPaneMinSize;
-    const prevPaneIsCollapsed = prevPaneSize <= prevPaneMinSize / 2;
+    const prevPaneIsCollapsed = prevPane.collapsible && prevPaneSize <= prevPaneMinSize / 2;
 
     let nextPaneSize = getChildSizeAsNumber(nextPaneIndex) - delta;
     const nextPaneMinSize = convertFrToNumber(convertSizeToFr(nextPane.minSize, rootSize));
     const nextPaneIsMinSize = nextPaneSize <= nextPaneMinSize;
-    const nextPaneIsCollapsed = nextPaneSize <= nextPaneMinSize / 2;
+    const nextPaneIsCollapsed = nextPane.collapsible && nextPaneSize <= nextPaneMinSize / 2;
 
     if (prevPaneIsCollapsed || nextPaneIsCollapsed) {
       if (prevPaneIsCollapsed) {
