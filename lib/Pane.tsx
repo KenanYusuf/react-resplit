@@ -2,7 +2,7 @@ import { ReactNode, HTMLAttributes, forwardRef } from 'react';
 import { Slot } from '@radix-ui/react-slot';
 
 import { useRootContext } from './RootContext';
-import { PANE_DEFAULT_MIN_SIZE } from './const';
+import { PANE_DEFAULT_COLLAPSED_SIZE, PANE_DEFAULT_MIN_SIZE } from './const';
 import { useIsomorphicLayoutEffect } from './utils';
 
 import type { FrValue, Order, PxValue } from './types';
@@ -17,13 +17,29 @@ export type ResplitPaneOptions = {
    */
   initialSize?: FrValue;
   /**
-   * Set the minimum size of the pane as a fractional unit (fr).
+   * Set the minimum size of the pane as a pixel unit (px) or fractional unit (fr).
    *
    * @example '0.1fr'
    *
    * @defaultValue '0fr'
    */
   minSize?: PxValue | FrValue;
+  /**
+   * Whether the pane can be collapsed below its minimum size.
+   *
+   * The pane will be collapsed if the user drags the splitter past 50% of the minimum size.
+   *
+   * @defaultValue false
+   */
+  collapsible?: boolean;
+  /**
+   * Set the collapsed size of the pane as a pixel unit (px) or fractional unit (fr).
+   *
+   * @example '50px'
+   *
+   * @defaultValue '0fr'
+   */
+  collapsedSize?: PxValue | FrValue;
   /**
    * Callback function that is called when the pane starts being resized.
    */
@@ -87,6 +103,8 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
     children,
     order,
     minSize = PANE_DEFAULT_MIN_SIZE,
+    collapsible = false,
+    collapsedSize = PANE_DEFAULT_COLLAPSED_SIZE,
     initialSize,
     asChild = false,
     onResize,
@@ -103,6 +121,8 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
     registerPane(String(order), {
       minSize,
       initialSize,
+      collapsedSize,
+      collapsible,
       onResize,
       onResizeStart,
       onResizeEnd,
@@ -113,7 +133,8 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
     <Comp
       id={`resplit-${id}-${order}`}
       data-resplit-order={order}
-      data-resplit-collapsed={false}
+      data-resplit-is-min={false}
+      data-resplit-is-collapsed={false}
       ref={ref}
       {...rest}
     >

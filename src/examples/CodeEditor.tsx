@@ -191,7 +191,14 @@ export const CodeEditorExample = () => {
           </button>
         </div>
         <Resplit.Root className="flex-1 font-mono text-sm">
-          <Resplit.Pane order={0} initialSize="0.15fr" minSize="0.1fr" className="bg-zinc-800">
+          <Resplit.Pane
+            order={0}
+            initialSize="0.15fr"
+            minSize="0.1fr"
+            collapsedSize="40px"
+            collapsible
+            className="bg-zinc-800 overflow-hidden"
+          >
             <PaneHeader id="files-pane">Files</PaneHeader>
             <SandpackFileExplorer autoHiddenFiles className="py-0" />
           </Resplit.Pane>
