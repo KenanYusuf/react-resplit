@@ -13,13 +13,21 @@ export type ResplitContextValue = {
    */
   setPaneSizes: (paneSizes: FrValue[]) => void;
   /**
+   * Get the min size state of a pane.
+   *
+   * @param order - The order of the pane. {@link Order}
+   *
+   * @returns A boolean indicating if the pane is at its min size or not.
+   */
+  isPaneMinSize: (order: number) => boolean;
+  /**
    * Get the collapsed state of a pane.
    *
    * @param order - The order of the pane. {@link Order}
    *
    * @returns A boolean indicating if the pane is collapsed or not.
    */
-  getPaneCollapsed: (order: number) => boolean;
+  isPaneCollapsed: (order: number) => boolean;
 };
 
 export const ResplitContext = createContext<ResplitContextValue | undefined>(undefined);
