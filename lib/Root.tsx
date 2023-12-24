@@ -6,7 +6,6 @@ import { RootContext } from './RootContext';
 import { CURSOR_BY_DIRECTION, GRID_TEMPLATE_BY_DIRECTION } from './const';
 import {
   convertFrToNumber,
-  convertPxToFr,
   convertPxToNumber,
   convertSizeToFr,
   isPx,
@@ -138,13 +137,13 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
   const isPaneMinSize = (order: Order) =>
     getChildElement(order)?.getAttribute('data-resplit-is-min') === 'true';
 
-  const setisPaneMinSize = (order: Order, value: boolean) =>
+  const setIsPaneMinSize = (order: Order, value: boolean) =>
     getChildElement(order)?.setAttribute('data-resplit-is-min', String(value));
 
   const isPaneCollapsed = (order: Order) =>
     getChildElement(order)?.getAttribute('data-resplit-is-collapsed') === 'true';
 
-  const setisPaneCollapsed = (order: Order, value: boolean) =>
+  const setIsPaneCollapsed = (order: Order, value: boolean) =>
     getChildElement(order)?.setAttribute('data-resplit-is-collapsed', String(value));
 
   const getRootSize = () =>
@@ -231,13 +230,13 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
     }
 
     setChildSize(prevPaneIndex, `${prevPaneSize}fr`);
-    setisPaneMinSize(prevPaneIndex, prevPaneisPaneMinSize);
-    setisPaneCollapsed(prevPaneIndex, prevPaneisPaneCollapsed);
+    setIsPaneMinSize(prevPaneIndex, prevPaneisPaneMinSize);
+    setIsPaneCollapsed(prevPaneIndex, prevPaneisPaneCollapsed);
     prevPane?.onResize?.(`${prevPaneSize}fr`);
 
     setChildSize(nextPaneIndex, `${nextPaneSize}fr`);
-    setisPaneMinSize(nextPaneIndex, nextPaneisPaneMinSize);
-    setisPaneCollapsed(nextPaneIndex, nextPaneisPaneCollapsed);
+    setIsPaneMinSize(nextPaneIndex, nextPaneisPaneMinSize);
+    setIsPaneCollapsed(nextPaneIndex, nextPaneisPaneCollapsed);
     nextPane?.onResize?.(`${nextPaneSize}fr`);
   };
 
@@ -400,8 +399,8 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
     paneSizes.forEach((paneSize, index) => {
       const order = index * 2;
       setChildSize(order, paneSize);
-      setisPaneMinSize(order, (children[order] as PaneChild).minSize === paneSize);
-      setisPaneCollapsed(order, (children[order] as PaneChild).collapsedSize === paneSize);
+      setIsPaneMinSize(order, (children[order] as PaneChild).minSize === paneSize);
+      setIsPaneCollapsed(order, (children[order] as PaneChild).collapsedSize === paneSize);
     });
   };
 
@@ -413,17 +412,15 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
   useIsomorphicLayoutEffect(() => {
     const paneCount = Object.values(children).filter((child) => child.type === 'pane').length;
 
-    Object.keys(children).forEach((order) => {
-      const orderAsNumber = Number(order);
-      const child = children[orderAsNumber];
+    Object.keys(children).forEach((key) => {
+      const order = Number(key);
+      const child = children[order];
 
       if (child.type === 'pane') {
-        const paneSize = isPaneMinSize(orderAsNumber)
-          ? '0fr'
-          : child.initialSize || `${1 / paneCount}fr`;
-        setChildSize(orderAsNumber, paneSize);
+        const paneSize = isPaneMinSize(order) ? '0fr' : child.initialSize || `${1 / paneCount}fr`;
+        setChildSize(order, paneSize);
       } else {
-        setChildSize(orderAsNumber, child.size);
+        setChildSize(order, child.size);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
