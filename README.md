@@ -112,17 +112,19 @@ The root component of a resplit layout. Provides context to all child components
 
 A pane is a container that can be resized.
 
-| Prop            | Type                           | Default                               | Description                                                               |
-| --------------- | ------------------------------ | ------------------------------------- | ------------------------------------------------------------------------- |
-| `initialSize`   | `${number}fr`                  | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr)                |
-| `minSize`       | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the minimum size of the pane as a fractional (fr) or pixel (px) unit  |
-| `onResizeStart` | `() => void`                   |                                       | Callback function that is called when the pane starts being resized.      |
-| `onResize`      | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized. |
-| `onResizeEnd`   | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized. |
-| `asChild`       | `boolean`                      | `false`                               | Merges props onto the immediate child                                     |
-| `children`      | `ReactNode`                    |                                       | Child elements                                                            |
-| `className`     | `string`                       |                                       | Class name                                                                |
-| `style`         | `CSSProperties`                |                                       | Style object                                                              |
+| Prop            | Type                           | Default                               | Description                                                                |
+| --------------- | ------------------------------ | ------------------------------------- | -------------------------------------------------------------------------- |
+| `initialSize`   | `${number}fr`                  | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr)                 |
+| `minSize`       | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the minimum size of the pane as a fractional (fr) or pixel (px) unit   |
+| `collapsible`   | `boolean`                      | `false`                               | Whether the pane can be collapsed below its minimum size                   |
+| `collapsedSize` | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the collapsed size of the pane as a fractional (fr) or pixel (px) unit |
+| `onResizeStart` | `() => void`                   |                                       | Callback function that is called when the pane starts being resized.       |
+| `onResize`      | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized.  |
+| `onResizeEnd`   | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized.  |
+| `asChild`       | `boolean`                      | `false`                               | Merges props onto the immediate child                                      |
+| `children`      | `ReactNode`                    |                                       | Child elements                                                             |
+| `className`     | `string`                       |                                       | Class name                                                                 |
+| `style`         | `CSSProperties`                |                                       | Style object                                                               |
 
 ### Splitter `(ResplitSplitterProps)`
 
@@ -152,7 +154,7 @@ Specify the size of each pane as a fractional unit (fr). The number of values sh
 setPaneSize(['0.6fr', '0.4fr']);
 ```
 
-#### getPaneCollapsed `(order: number) => boolean`
+#### isPaneCollapsed `(order: number) => boolean`
 
 Get the collapsed state of a pane.
 
@@ -162,12 +164,46 @@ Get the collapsed state of a pane.
 import { Resplit, useResplitContext } from 'react-resplit';
 
 function App() {
-  const { getPaneCollapsed } = useResplitContext({
+  const { isPaneCollapsed } = useResplitContext({
     direction: 'horizontal',
   });
 
   const handleResize = () => {
-    if (getPaneCollapsed(2)) {
+    if (isPaneCollapsed(2)) {
+      // Do something
+    }
+  };
+
+  return (
+    <Resplit.Root>
+      <Resplit.Pane order={0} initialSize="0.5fr">
+        Pane 1
+      </Resplit.Pane>
+      <Resplit.Splitter order={1} size="10px" />
+      <Resplit.Pane order={2} initialSize="0.5fr" onResize={handleResize}>
+        Pane 2
+      </Resplit.Pane>
+    </Resplit.Root>
+  );
+}
+```
+
+#### isPaneMinSize `(order: number) => boolean`
+
+Get the min size state of a pane.
+
+**Note**: The returned value will not update on every render and should be used in a callback e.g. used in combination with a pane's `onResize` callback.
+
+```tsx
+import { Resplit, useResplitContext } from 'react-resplit';
+
+function App() {
+  const { isPaneMinSize } = useResplitContext({
+    direction: 'horizontal',
+  });
+
+  const handleResize = () => {
+    if (isPaneMinSize(2)) {
       // Do something
     }
   };

@@ -17,3 +17,5 @@ export const CURSOR_BY_DIRECTION = {
 export const SPLITTER_DEFAULT_SIZE = '10px';
 
 export const PANE_DEFAULT_MIN_SIZE = '0fr';
+
+export const PANE_DEFAULT_COLLAPSED_SIZE = '0fr';
