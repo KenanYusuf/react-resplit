@@ -71,15 +71,15 @@ const PaneHeader = ({ children, id }: { children: React.ReactNode; id?: string }
 );
 
 const ProblemsPane = () => {
-  const { getPaneCollapsed, setPaneSizes } = useResplitContext();
+  const { isPaneMinSize, setPaneSizes } = useResplitContext();
   const [tab, setTab] = React.useState<'console' | 'problems'>('console');
-  const [collapsed, setCollapsed] = useState(false);
+  const [isMinSize, setIsMinSize] = useState(false);
 
   const handleResize = () => {
-    if (getPaneCollapsed(2)) {
-      setCollapsed(true);
+    if (isPaneMinSize(2)) {
+      setIsMinSize(true);
     } else {
-      setCollapsed(false);
+      setIsMinSize(false);
     }
   };
 
@@ -103,14 +103,14 @@ const ProblemsPane = () => {
           </button>
           <button
             className={`flex items-center justify-center h-6 w-6 ml-auto hover:bg-zinc-700 ${
-              collapsed ? 'transform rotate-180' : ''
+              isMinSize ? 'transform rotate-180' : ''
             }`}
             onMouseDown={(e) => {
               e.stopPropagation();
             }}
             onClick={() => {
-              setPaneSizes(collapsed ? ['0.4fr', '0.6fr'] : ['1fr', '0fr']);
-              setCollapsed(!collapsed);
+              setPaneSizes(isMinSize ? ['0.4fr', '0.6fr'] : ['1fr', '0fr']);
+              setIsMinSize(!isMinSize);
             }}
           >
             <svg
