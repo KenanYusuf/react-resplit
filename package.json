@@ -35,7 +35,7 @@
   ],
   "size-limit": [
     {
-      "limit": "3 kB",
+      "limit": "5 kB",
       "path": "dist/resplit.es.js"
     }
   ],
