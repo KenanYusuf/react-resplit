@@ -27,7 +27,8 @@
   "exports": {
     ".": {
       "import": "./dist/resplit.es.js",
-      "require": "./dist/resplit.umd.cjs"
+      "require": "./dist/resplit.umd.cjs",
+      "types": "./dist/resplit.d.ts"
     }
   },
   "files": [
