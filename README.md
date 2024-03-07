@@ -114,6 +114,7 @@ A pane is a container that can be resized.
 
 | Prop            | Type                           | Default                               | Description                                                                |
 | --------------- | ------------------------------ | ------------------------------------- | -------------------------------------------------------------------------- |
+| `order`         | `number`                       |                                       | Specifies the order of the resplit child (pane or splitter) in the DOM     |
 | `initialSize`   | `${number}fr`                  | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr)                 |
 | `minSize`       | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the minimum size of the pane as a fractional (fr) or pixel (px) unit   |
 | `collapsible`   | `boolean`                      | `false`                               | Whether the pane can be collapsed below its minimum size                   |
@@ -132,6 +133,7 @@ A splitter is a draggable element that can be used to resize panes.
 
 | Name        | Type            | Default  | Description                                  |
 | ----------- | --------------- | -------- | -------------------------------------------- |
+| `order`     | `number`        |          | Specifies the order of the resplit child (pane or splitter) in the DOM |
 | `size`      | `${number}px`   | `"10px"` | Set the size of the splitter as a pixel unit |
 | `asChild`   | `boolean`       | `false`  | Merges props onto the immediate child        |
 | `children`  | `ReactNode`     |          | Child elements                               |
