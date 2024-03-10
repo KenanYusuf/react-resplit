@@ -58,7 +58,10 @@ export type ResplitPaneOptions = {
   onResize?: (size: FrValue) => void;
 };
 
-export type ResplitPaneProps = HTMLAttributes<HTMLDivElement> &
+export type ResplitPaneProps = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'onResize' | 'onResizeEnd' | 'onResizeStart'
+> &
   ResplitPaneOptions & {
     /**
      * The order of the pane in the layout. {@link Order}
