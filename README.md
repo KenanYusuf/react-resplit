@@ -131,14 +131,14 @@ A pane is a container that can be resized.
 
 A splitter is a draggable element that can be used to resize panes.
 
-| Name        | Type            | Default  | Description                                  |
-| ----------- | --------------- | -------- | -------------------------------------------- |
+| Name        | Type            | Default  | Description                                                            |
+| ----------- | --------------- | -------- | ---------------------------------------------------------------------- |
 | `order`     | `number`        |          | Specifies the order of the resplit child (pane or splitter) in the DOM |
-| `size`      | `${number}px`   | `"10px"` | Set the size of the splitter as a pixel unit |
-| `asChild`   | `boolean`       | `false`  | Merges props onto the immediate child        |
-| `children`  | `ReactNode`     |          | Child elements                               |
-| `className` | `string`        |          | Class name                                   |
-| `style`     | `CSSProperties` |          | Style object                                 |
+| `size`      | `${number}px`   | `"10px"` | Set the size of the splitter as a pixel unit                           |
+| `asChild`   | `boolean`       | `false`  | Merges props onto the immediate child                                  |
+| `children`  | `ReactNode`     |          | Child elements                                                         |
+| `className` | `string`        |          | Class name                                                             |
+| `style`     | `CSSProperties` |          | Style object                                                           |
 
 ### useResplitContext `() => ResplitContextValue`
 
@@ -163,28 +163,34 @@ Get the collapsed state of a pane.
 **Note**: The returned value will not update on every render and should be used in a callback e.g. used in combination with a pane's `onResize` callback.
 
 ```tsx
-import { Resplit, useResplitContext } from 'react-resplit';
+import { Resplit, useResplitContext, ResplitPaneProps, FrValue } from 'react-resplit';
 
-function App() {
-  const { isPaneCollapsed } = useResplitContext({
-    direction: 'horizontal',
-  });
+function CustomPane(props: ResplitPaneProps) {
+  const { isPaneCollapsed } = useResplitContext();
 
-  const handleResize = () => {
-    if (isPaneCollapsed(2)) {
+  const handleResize = (size: FrValue) => {
+    if (isPaneCollapsed(props.order)) {
       // Do something
     }
   };
 
   return (
+    <Resplit.Pane
+      {...props}
+      initialSize="0.5fr"
+      collapsedSize="0.2fr"
+      collapsible
+      onResize={handleResize}
+    />
+  );
+}
+
+function App() {
+  return (
     <Resplit.Root>
-      <Resplit.Pane order={0} initialSize="0.5fr">
-        Pane 1
-      </Resplit.Pane>
-      <Resplit.Splitter order={1} size="10px" />
-      <Resplit.Pane order={2} initialSize="0.5fr" onResize={handleResize}>
-        Pane 2
-      </Resplit.Pane>
+      <CustomPane order={0} />
+      <Resplit.Splitter order={1} />
+      <CustomPane order={2} />
     </Resplit.Root>
   );
 }
@@ -197,28 +203,26 @@ Get the min size state of a pane.
 **Note**: The returned value will not update on every render and should be used in a callback e.g. used in combination with a pane's `onResize` callback.
 
 ```tsx
-import { Resplit, useResplitContext } from 'react-resplit';
+import { Resplit, useResplitContext, ResplitPaneProps, FrValue } from 'react-resplit';
 
-function App() {
-  const { isPaneMinSize } = useResplitContext({
-    direction: 'horizontal',
-  });
+function CustomPane(props: ResplitPaneProps) {
+  const { isPaneMinSize } = useResplitContext();
 
-  const handleResize = () => {
-    if (isPaneMinSize(2)) {
+  const handleResize = (size: FrValue) => {
+    if (isPaneMinSize(props.order)) {
       // Do something
     }
   };
 
+  return <Resplit.Pane {...props} initialSize="0.5fr" minSize="0.2fr" onResize={handleResize} />;
+}
+
+function App() {
   return (
     <Resplit.Root>
-      <Resplit.Pane order={0} initialSize="0.5fr">
-        Pane 1
-      </Resplit.Pane>
-      <Resplit.Splitter order={1} size="10px" />
-      <Resplit.Pane order={2} initialSize="0.5fr" onResize={handleResize}>
-        Pane 2
-      </Resplit.Pane>
+      <CustomPane order={0} />
+      <Resplit.Splitter order={1} />
+      <CustomPane order={2} />
     </Resplit.Root>
   );
 }
