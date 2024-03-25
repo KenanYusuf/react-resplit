@@ -156,6 +156,8 @@ Specify the size of each pane as a fractional unit (fr). The number of values sh
 setPaneSizes(['0.6fr', '0.4fr']);
 ```
 
+If your pane has an `onResize` callback, it will be called with the new size.
+
 #### isPaneCollapsed `(order: number) => boolean`
 
 Get the collapsed state of a pane.
