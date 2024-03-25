@@ -146,14 +146,14 @@ The `useResplitContext` hook provides access to the context of the nearest `Resp
 
 See the methods below for more information on what is available.
 
-#### setPaneSize `(paneSizes: FrValue[]) => void`
+#### setPaneSizes `(paneSizes: FrValue[]) => void`
 
 Get the collapsed state of a pane.
 
 Specify the size of each pane as a fractional unit (fr). The number of values should match the number of panes.
 
 ```tsx
-setPaneSize(['0.6fr', '0.4fr']);
+setPaneSizes(['0.6fr', '0.4fr']);
 ```
 
 #### isPaneCollapsed `(order: number) => boolean`

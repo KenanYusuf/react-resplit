@@ -401,6 +401,11 @@ export const ResplitRoot = forwardRef<HTMLDivElement, ResplitRootProps>(function
       setChildSize(order, paneSize);
       setIsPaneMinSize(order, (children[order] as PaneChild).minSize === paneSize);
       setIsPaneCollapsed(order, (children[order] as PaneChild).collapsedSize === paneSize);
+
+      const pane = children[order] as PaneChild;
+      if (pane.type === 'pane') {
+        pane.onResize?.(paneSize);
+      }
     });
   };
 
