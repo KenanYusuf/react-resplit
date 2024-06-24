@@ -112,20 +112,23 @@ The root component of a resplit layout. Provides context to all child components
 
 A pane is a container that can be resized.
 
-| Prop            | Type                           | Default                               | Description                                                                |
-| --------------- | ------------------------------ | ------------------------------------- | -------------------------------------------------------------------------- |
-| `order`         | `number`                       |                                       | Specifies the order of the resplit child (pane or splitter) in the DOM     |
-| `initialSize`   | `${number}fr`                  | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr)                 |
-| `minSize`       | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the minimum size of the pane as a fractional (fr) or pixel (px) unit   |
-| `collapsible`   | `boolean`                      | `false`                               | Whether the pane can be collapsed below its minimum size                   |
-| `collapsedSize` | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the collapsed size of the pane as a fractional (fr) or pixel (px) unit |
-| `onResizeStart` | `() => void`                   |                                       | Callback function that is called when the pane starts being resized.       |
-| `onResize`      | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized.  |
-| `onResizeEnd`   | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized.  |
-| `asChild`       | `boolean`                      | `false`                               | Merges props onto the immediate child                                      |
-| `children`      | `ReactNode`                    |                                       | Child elements                                                             |
-| `className`     | `string`                       |                                       | Class name                                                                 |
-| `style`         | `CSSProperties`                |                                       | Style object                                                               |
+| Prop             | Type                           | Default                               | Description                                                                |
+| ---------------- | ------------------------------ | ------------------------------------- | -------------------------------------------------------------------------- |
+| `order`          | `number`                       |                                       | Specifies the order of the resplit child (pane or splitter) in the DOM     |
+| `initialSize`    | `${number}fr`                  | `[available space]/[number of panes]` | Set the initial size of the pane as a fractional unit (fr)                 |
+| `minSize`        | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the minimum size of the pane as a fractional (fr) or pixel (px) unit   |
+| `collapsible`    | `boolean`                      | `false`                               | Whether the pane can be collapsed below its minimum size                   |
+| `defaultCollapse`| `boolean`                      | `false`                               | Whether the pane collapsed by default to it's collapsible size.            |
+| `collapsedSize`  | `${number}fr` \| `${number}px` | `"0fr"`                               | Set the collapsed size of the pane as a fractional (fr) or pixel (px) unit |
+| `onResizeStart`  | `() => void`                   |                                       | Callback function that is called when the pane starts being resized.       |
+| `onResize`       | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized.  |
+| `onResizeEnd`    | `(size: FrValue) => void`      |                                       | Callback function that is called when the pane is actively being resized.  |
+| `onCollapse`     | `(size: FrValue) => void`      |                                       | Callback function that is called when the collapsible pane is collapsed.   |
+| `onExpand`       | `(size: FrValue) => void`      |                                       | Callback function that is called when the collapsible pane is expanded.    |
+| `asChild`        | `boolean`                      | `false`                               | Merges props onto the immediate child                                      |
+| `children`       | `ReactNode`                    |                                       | Child elements                                                             |
+| `className`      | `string`                       |                                       | Class name                                                                 |
+| `style`          | `CSSProperties`                |                                       | Style object                                                               |
 
 ### Splitter `(ResplitSplitterProps)`
 
