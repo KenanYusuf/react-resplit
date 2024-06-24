@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect } from 'react';
-import { FrValue, PxValue } from './types';
+import {useEffect, useLayoutEffect} from 'react';
+import {FrValue, PxValue} from './types';
 
 export const convertFrToNumber = (val: FrValue) => Number(val.replace('fr', ''));
 
@@ -28,4 +28,25 @@ export function mergeRefs<T>(
       }
     });
   };
+}
+
+export function isFractionvalue(val: string): boolean {
+  return val.endsWith('fr');
+}
+
+export function isPixelvalue(val: string): boolean {
+  return val.endsWith('px');
+}
+export function extractValueAndUnit(input: string): { value: number; unit: string } | null {
+  const regex = /^(\d+(\.\d+)?)(\D+)$/;
+  const match = input.match(regex);
+
+  if (match) {
+    return {
+      value: parseFloat(match[1]),
+      unit: match[3],
+    };
+  }
+
+  return null;
 }

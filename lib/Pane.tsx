@@ -1,11 +1,13 @@
-import { ReactNode, HTMLAttributes, forwardRef } from 'react';
-import { Slot } from '@radix-ui/react-slot';
+import {ReactNode, HTMLAttributes, forwardRef} from 'react';
+import {Slot} from '@radix-ui/react-slot';
 
-import { useRootContext } from './RootContext';
-import { PANE_DEFAULT_COLLAPSED_SIZE, PANE_DEFAULT_MIN_SIZE } from './const';
-import { useIsomorphicLayoutEffect } from './utils';
+import {useRootContext} from './RootContext';
+import {PANE_DEFAULT_COLLAPSED_SIZE, PANE_DEFAULT_MIN_SIZE} from './const';
+import {
+  useIsomorphicLayoutEffect
+} from './utils';
 
-import type { FrValue, Order, PxValue } from './types';
+import type {FrValue, Order, PxValue} from './types';
 
 export type ResplitPaneOptions = {
   /**
@@ -33,6 +35,14 @@ export type ResplitPaneOptions = {
    */
   collapsible?: boolean;
   /**
+   * Whether the pane collapsed by default.
+   *
+   * The pane will be collapsed on the first render despite of the initialSize Provided.
+   *
+   * @defaultValue false
+   */
+  defaultCollapsed?: boolean;
+  /**
    * Set the collapsed size of the pane as a pixel unit (px) or fractional unit (fr).
    *
    * @example '50px'
@@ -56,11 +66,23 @@ export type ResplitPaneOptions = {
    * @param size - The new size of the pane. {@link FrValue}
    */
   onResize?: (size: FrValue) => void;
+  /**
+   * Callback function that is called when the pane is collapsed.
+   *
+   * @param size - The new size of the pane. {@link FrValue}
+   */
+  onCollapse?: (size: FrValue) => void;
+  /**
+   * Callback function that is called when the pane is expanded.
+   *
+   * @param size - The new size of the pane. {@link FrValue}
+   */
+  onExpand?: (size: FrValue) => void;
 };
 
 export type ResplitPaneProps = Omit<
   HTMLAttributes<HTMLDivElement>,
-  'onResize' | 'onResizeEnd' | 'onResizeStart'
+  'onResize' | 'onResizeEnd' | 'onResizeStart' | 'onExpand' | 'onCollapse'
 > &
   ResplitPaneOptions & {
     /**
@@ -107,12 +129,15 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
     order,
     minSize = PANE_DEFAULT_MIN_SIZE,
     collapsible = false,
+    defaultCollapsed = false,
     collapsedSize = PANE_DEFAULT_COLLAPSED_SIZE,
     initialSize,
     asChild = false,
     onResize,
     onResizeStart,
     onResizeEnd,
+    onCollapse,
+    onExpand,
     ...rest
   },
   ref,
@@ -129,6 +154,8 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
       onResize,
       onResizeStart,
       onResizeEnd,
+      onCollapse,
+      onExpand,
     });
   }, []);
 
@@ -137,7 +164,8 @@ export const ResplitPane = forwardRef<HTMLDivElement, ResplitPaneProps>(function
       id={`resplit-${id}-${order}`}
       data-resplit-order={order}
       data-resplit-is-min={false}
-      data-resplit-is-collapsed={false}
+      data-resplit-is-collapsed={defaultCollapsed}
+      data-resplit-default-collapsed={defaultCollapsed}
       ref={ref}
       {...rest}
     >
