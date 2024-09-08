@@ -1,4 +1,4 @@
-import { ReactNode, HTMLAttributes, forwardRef } from 'react';
+import { ReactNode, HTMLAttributes, forwardRef, useRef, useEffect } from 'react';
 import { Slot } from '@radix-ui/react-slot';
 
 import { useRootContext } from './RootContext';
@@ -64,15 +64,20 @@ export const ResplitSplitter = forwardRef<HTMLDivElement, ResplitSplitterProps>(
   const { id, direction, registerSplitter, handleSplitterMouseDown, handleSplitterKeyDown } =
     useRootContext();
 
+  const splitterOptionsRef = useRef<ResplitSplitterOptions>({ size });
+
   useIsomorphicLayoutEffect(() => {
-    registerSplitter(String(order), { size });
+    registerSplitter(String(order), splitterOptionsRef);
   }, []);
+
+  useEffect(() => {
+    splitterOptionsRef.current = { size };
+  }, [size]);
 
   return (
     // eslint-disable-next-line jsx-a11y/role-supports-aria-props, jsx-a11y/no-noninteractive-element-interactions
     <Comp
       role="separator"
-      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
       tabIndex={0}
       aria-orientation={direction}
       aria-valuemin={0}
