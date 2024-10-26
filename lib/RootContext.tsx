@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, MutableRefObject, useContext } from 'react';
 
 import type { Direction } from './types';
 import type { ResplitPaneOptions } from './Pane';
@@ -8,8 +8,8 @@ export const RootContext = createContext<
   | {
       id: string;
       direction: Direction;
-      registerPane: (order: string, options: ResplitPaneOptions) => void;
-      registerSplitter: (order: string, options: ResplitSplitterOptions) => void;
+      registerPane: (order: string, options: MutableRefObject<ResplitPaneOptions>) => void;
+      registerSplitter: (order: string, options: MutableRefObject<ResplitSplitterOptions>) => void;
       handleSplitterMouseDown: (order: number) => () => void;
       handleSplitterKeyDown: (
         splitterOrder: number,

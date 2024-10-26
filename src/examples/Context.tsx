@@ -7,8 +7,8 @@ export const SizeAwarePane = (props: ResplitPaneProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMinSize, setIsMinSize] = useState(false);
 
-  const handleResize = (size: FrValue) => {
-    setSize(size);
+  const handleResize = (newSize: FrValue) => {
+    setSize(newSize);
     setIsCollapsed(isPaneCollapsed(props.order));
     setIsMinSize(isPaneMinSize(props.order));
   };
